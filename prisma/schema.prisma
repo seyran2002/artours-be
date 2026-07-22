@@ -1,0 +1,186 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+}
+
+enum BookingType {
+  TOUR
+  TRANSFER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentMethod {
+  CASH
+}
+
+model User {
+  id       String @id @default(uuid())
+  email    String @unique
+  password String
+  role     Role   @default(ADMIN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id String @id @default(uuid())
+
+  ruName String
+  enName String
+
+  isMain Boolean @default(false)
+
+  transfers Transfer[]
+  tours     Tour[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Transfer {
+  id   String @id @default(uuid())
+  slug String
+
+  enTitle String
+  ruTitle String
+
+  enDescription String
+  ruDescription String
+
+  enLongDescription String
+  ruLongDescription String
+
+  mainImage String
+  images    String[]
+
+  tags Tag[]
+
+  minimumPrice Int
+
+  distanceFromYerevan Int?
+  entranceFees        Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // FROM
+  fromPlaceId     String
+  fromAddressText String
+  fromLat         Float
+  fromLng         Float
+
+  // TO
+  toPlaceId     String
+  toAddressText String
+  toLat         Float
+  toLng         Float
+
+  routePolyline String?
+  tours         TourTransfer[]
+
+  bookings Booking[]
+}
+
+model Tour {
+  id   String @id @default(uuid())
+  slug String
+
+  enTitle String
+  ruTitle String
+
+  enDescription String
+  ruDescription String
+
+  mainImage String
+  images    String[]
+
+  minimumPrice Int
+  duration     String?
+
+  isOvernight Boolean @default(false)
+  starRating  Int?
+  mealOptions Json?
+
+  routePolyline String?
+  entranceFees  Json?
+
+  tags Tag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transfers TourTransfer[]
+
+  bookings Booking[]
+}
+
+model TourTransfer {
+  id String @id @default(uuid())
+
+  tourId     String
+  transferId String
+  order      Int
+
+  tour     Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  transfer Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([tourId, transferId])
+  @@index([tourId])
+  @@index([tourId, order])
+  @@index([transferId])
+}
+
+model Booking {
+  id String @id @default(uuid())
+
+  bookingNumber String @unique
+
+  type BookingType
+
+  status        BookingStatus @default(PENDING)
+  paymentMethod PaymentMethod @default(CASH)
+
+  peopleCount Int
+
+  travelDate DateTime
+
+  customerName       String
+  customerEmail      String
+  customerPhone      String
+  customerTelegramId String?
+  notes              String?
+
+  totalPrice Decimal
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tourId String?
+  tour   Tour?   @relation(fields: [tourId], references: [id])
+
+  transferId String?
+  transfer   Transfer? @relation(fields: [transferId], references: [id])
+
+  @@index([status, travelDate])
+}
