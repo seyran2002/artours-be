@@ -431,6 +431,7 @@ export class TourService {
                 OR: [
                     { enTitle: { contains: q, mode: 'insensitive' } },
                     { ruTitle: { contains: q, mode: 'insensitive' } },
+                    { hyTitle: { contains: q, mode: 'insensitive' } },
                 ],
             },
             skip,
@@ -440,6 +441,7 @@ export class TourService {
                 slug: true,
                 enTitle: true,
                 ruTitle: true,
+                hyTitle: true,
                 mainImage: true,
             },
         });
@@ -451,6 +453,7 @@ export class TourService {
                 OR: [
                     { enTitle: { contains: q, mode: 'insensitive' } },
                     { ruTitle: { contains: q, mode: 'insensitive' } },
+                    { hyTitle: { contains: q, mode: 'insensitive' } },
                 ],
             },
         });

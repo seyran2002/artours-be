@@ -45,6 +45,7 @@ model Tag {
   id String @id @default(uuid())
 
   ruName String
+  hyName String
   enName String
 
   isMain Boolean @default(false)
@@ -62,12 +63,15 @@ model Transfer {
 
   enTitle String
   ruTitle String
+  hyTitle String
 
   enDescription String
   ruDescription String
+  hyDescription String
 
   enLongDescription String
   ruLongDescription String
+  hyLongDescription String
 
   mainImage String
   images    String[]
@@ -106,9 +110,15 @@ model Tour {
 
   enTitle String
   ruTitle String
+  hyTitle String
 
   enDescription String
   ruDescription String
+  hyDescription String
+
+  enLongDescription String
+  ruLongDescription String
+  hyLongDescription String
 
   mainImage String
   images    String[]

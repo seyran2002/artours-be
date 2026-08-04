@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 interface EntranceFees {
     enName: string;
     ruName: string;
+    hyName: string;
     fee: number;
 }
 
@@ -62,6 +63,10 @@ export class CreateTransferDto {
 
     @IsString()
     @IsNotEmpty()
+    hyTitle!: string;
+
+    @IsString()
+    @IsNotEmpty()
     enDescription!: string;
 
     @IsString()
@@ -70,11 +75,19 @@ export class CreateTransferDto {
 
     @IsString()
     @IsNotEmpty()
+    hyDescription!: string;
+
+    @IsString()
+    @IsNotEmpty()
     enLongDescription!: string;
 
     @IsString()
     @IsNotEmpty()
     ruLongDescription!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    hyLongDescription!: string;
 
     // Sent as a file via multipart/form-data — not present in the body
     @IsOptional()

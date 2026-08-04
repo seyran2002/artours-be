@@ -9,6 +9,10 @@ export class CreateTagDto {
   @IsNotEmpty()
   enName: string;
 
+  @IsString()
+  @IsNotEmpty()
+  hyName: string;
+
   @IsBoolean()
   @IsOptional()
   isMain?: boolean;

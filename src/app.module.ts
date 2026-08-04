@@ -11,6 +11,7 @@ import { TourModule } from './tour/tour.module';
 import { SearchModule } from './search/search.module';
 import { BookingModule } from './booking/booking.module';
 import { TelegramModule } from './telegram/telegram.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TelegramModule } from './telegram/telegram.module';
     SearchModule,
     BookingModule,
     TelegramModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

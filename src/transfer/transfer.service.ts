@@ -225,6 +225,7 @@ export class TransferService {
                 OR: [
                     { enTitle: { contains: q, mode: 'insensitive' } },
                     { ruTitle: { contains: q, mode: 'insensitive' } },
+                    { hyTitle: { contains: q, mode: 'insensitive' } },
                 ],
             },
             skip,
@@ -234,6 +235,7 @@ export class TransferService {
                 slug: true,
                 enTitle: true,
                 ruTitle: true,
+                hyTitle: true,
                 mainImage: true,
             },
         });
@@ -245,6 +247,7 @@ export class TransferService {
                 OR: [
                     { enTitle: { contains: q, mode: 'insensitive' } },
                     { ruTitle: { contains: q, mode: 'insensitive' } },
+                    { hyTitle: { contains: q, mode: 'insensitive' } },
                 ],
             },
         });

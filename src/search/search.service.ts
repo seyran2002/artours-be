@@ -71,6 +71,7 @@ export class SearchService {
             slug: t.slug,
             enTitle: t.enTitle,
             ruTitle: t.ruTitle,
+            hyTitle: t.hyTitle,
             image: t.mainImage,
         }));
 
@@ -80,6 +81,7 @@ export class SearchService {
             slug: t.slug,
             enTitle: t.enTitle,
             ruTitle: t.ruTitle,
+            hyTitle: t.hyTitle,
             image: t.mainImage,
         }));
 

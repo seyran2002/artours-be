@@ -15,7 +15,28 @@ import { LinkTelegramDto } from './dto/link-telegram.dto';
 export class TelegramController {
     private readonly logger = new Logger(TelegramController.name);
 
-    constructor(private readonly telegramService: TelegramService) {}
+    constructor(private readonly telegramService: TelegramService) { }
+
+    /**
+     * POST /telegram/webhook
+     *
+     * Telegram calls this endpoint for every bot update (message, callback, etc.).
+     * When a user clicks the Start button (deep-link), Telegram sends a
+     * message with text "/start <bookingNumber>". This handler parses that,
+     * saves the chatId to the booking, and replies to the user.
+     *
+     * Register this URL with Telegram via:
+     *   POST https://api.telegram.org/bot<TOKEN>/setWebhook
+     *   { "url": "https://your-domain.com/telegram/webhook" }
+     *
+     * (The service does this automatically on startup via TELEGRAM_WEBHOOK_URL.)
+     */
+    @Post('webhook')
+    @HttpCode(HttpStatus.OK)
+    async handleWebhook(@Body() body: any) {
+        await this.telegramService.handleWebhook(body);
+        return { ok: true };
+    }
 
     /**
      * POST /telegram/link

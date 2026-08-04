@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
-import { TelegramModule } from 'src/telegram/telegram.module';
+import { NotificationModule } from 'src/notification/notification.module';
 import { BookingCronService } from './booking.cron.service';
 
 @Module({
     imports: [
-        TelegramModule
+        NotificationModule
     ],
     controllers: [BookingController],
     providers: [
@@ -15,3 +15,4 @@ import { BookingCronService } from './booking.cron.service';
     ],
 })
 export class BookingModule { }
+

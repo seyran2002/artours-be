@@ -21,11 +21,19 @@ export class CreateTourDto {
 
     @IsString()
     @IsNotEmpty()
+    hyTitle!: string;
+
+    @IsString()
+    @IsNotEmpty()
     enDescription!: string;
 
     @IsString()
     @IsNotEmpty()
     ruDescription!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    hyDescription!: string;
 
     // Sent as a file via multipart/form-data — not present in the body
     @IsOptional()

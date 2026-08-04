@@ -9,6 +9,7 @@ export class SearchResult {
     slug: string;
     enTitle: string;
     ruTitle: string;
+    hyTitle: string;
     image: string;
 }
 

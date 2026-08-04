@@ -10,7 +10,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingStatusDto } from './dto/update-booking-status.dto';
 import { CheckBookingDto } from './dto/check-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
-import { TelegramService } from 'src/telegram/telegram.service';
+import { NotificationService } from 'src/notification/notification.service';
 
 const NANOID_ALPHABET = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const nanoid = customAlphabet(NANOID_ALPHABET, 6);
@@ -22,6 +22,7 @@ const BOOKING_INCLUDE = {
             slug: true,
             enTitle: true,
             ruTitle: true,
+            hyTitle: true,
             mainImage: true,
             minimumPrice: true,
             duration: true,
@@ -33,6 +34,7 @@ const BOOKING_INCLUDE = {
             slug: true,
             enTitle: true,
             ruTitle: true,
+            hyTitle: true,
             mainImage: true,
             minimumPrice: true,
             toAddressText: true,
@@ -44,7 +46,7 @@ const BOOKING_INCLUDE = {
 export class BookingService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly telegramService: TelegramService,
+        private readonly notificationService: NotificationService,
     ) { }
 
     private async generateUniqueBookingNumber(): Promise<string> {
@@ -137,40 +139,7 @@ export class BookingService {
             include: BOOKING_INCLUDE,
         });
 
-        const entityName = booking.tour?.enTitle ?? booking.transfer?.enTitle ?? '—';
-
-        await this.telegramService.notifyAdmin(
-            `🆕 New ArTours Booking
-
-Booking number:
-<code>${booking.bookingNumber}</code>
-
-Type:
-<b>${booking.type}</b>
-
-Tour/Transfer name:
-<b>${entityName}</b>
-
-Customer:
-<b>${booking.customerName}</b>
-
-Email:
-<b>${booking.customerEmail}</b>
-
-Phone:
-<b>${booking.customerPhone}</b>
-
-People:
-<b>${booking.peopleCount}</b>
-
-Travel date:
-<b>${booking.travelDate.toISOString().split('T')[0]}</b>
-
-Total price:
-<b>${booking.totalPrice} AMD</b>
-
-<a href="http://localhost:5173/admin/bookings">Open bookings</a>`
-        );
+        await this.notificationService.notifyNewBooking(booking);
 
         return booking;
     }
@@ -226,18 +195,7 @@ Total price:
             include: BOOKING_INCLUDE,
         });
 
-        await this.telegramService.notifyAdmin(
-            `🔄 Booking Status Updated
-
-Booking:
-<code>${existing.bookingNumber}</code>
-
-Customer:
-<b>${existing.customerName}</b>
-
-Status:
-<b>${dto.status}</b>`
-        );
+        await this.notificationService.notifyStatusChanged(updated);
 
         return updated;
     }
@@ -274,7 +232,7 @@ Status:
             );
         }
 
-        return this.prisma.booking.update({
+        const updated = await this.prisma.booking.update({
             where: {
                 bookingNumber: dto.bookingNumber,
                 customerEmail: dto.customerEmail,
@@ -282,7 +240,12 @@ Status:
             data: {
                 status: BookingStatus.CANCELLED,
             },
+            include: BOOKING_INCLUDE,
         });
+
+        await this.notificationService.notifyCancelled(updated);
+
+        return updated;
     }
 
     async remove(id: string): Promise<{ id: string }> {
