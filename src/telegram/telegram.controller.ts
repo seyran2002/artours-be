@@ -53,7 +53,6 @@ export class TelegramController {
         @Body() dto: LinkTelegramDto,
     ) {
         const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
-
         if (!expectedSecret || secret !== expectedSecret) {
             this.logger.warn(
                 `Unauthorized /telegram/link attempt for booking ${dto.bookingNumber}`,

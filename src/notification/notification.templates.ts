@@ -43,7 +43,20 @@ export function buildNewBookingTemplate(ctx: NotificationContext): string {
 
 Thank you for choosing ArTours! 🙏`;
 
-    return ru + DIVIDER + en;
+    const hy = `🌍 <b>ArTours — Ձեր հայտը ընդունված է:</b>
+
+📋 <b>Ամրագրման համարը:</b> <code>${ctx.bookingNumber}</code>
+🗺 <b>Տուր/Տրանսֆեր:</b> ${ctx.hyTitle}
+👤 <b>Անուն:</b> ${ctx.customerName}
+👥 <b>Մարդկանց քանակը:</b> ${ctx.peopleCount}
+📅 <b>Ուղևորության ամսաթիվը:</b> ${fmtDate(ctx.travelDate)}
+💰 <b>Գումարը:</b> ${ctx.totalPrice} AMD
+
+⏳ Ձեր հայտը մշակվում է: Հաստատման համար մենք կապ կհաստատենք ձեզ հետ մոտակա ժամանակներս:
+
+Շնորհակալություն ArTours-ն ընտրելու համար: 🙏`;
+
+    return ru + DIVIDER + en + DIVIDER + hy;
 }
 
 /**
@@ -72,7 +85,18 @@ export function buildConfirmedTemplate(ctx: NotificationContext): string {
 
 🎉 Your booking is confirmed! We look forward to your trip!`;
 
-    return ru + DIVIDER + en;
+    const hy = `✅ <b>ArTours — Ամրագրումը հաստատված է:</b>
+
+📋 <b>Ամրագրման համարը:</b> <code>${ctx.bookingNumber}</code>
+🗺 <b>Տուր/Տրանսֆեր:</b> ${ctx.hyTitle}
+👤 <b>Անուն:</b> ${ctx.customerName}
+👥 <b>Մարդկանց քանակը:</b> ${ctx.peopleCount}
+📅 <b>Ուղևորության ամսաթիվը:</b> ${fmtDate(ctx.travelDate)}
+💰 <b>Գումարը:</b> ${ctx.totalPrice} AMD
+
+🎉 Ձեր ամրագրումը հաստատված է: Սպասում ենք ձեզ ճանապարհորդության:`;
+
+    return ru + DIVIDER + en + DIVIDER + hy;
 }
 
 /**
@@ -99,7 +123,17 @@ Your booking has been cancelled. If you have any questions, please contact us.
 
 We hope to see you again! 🌟`;
 
-    return ru + DIVIDER + en;
+    const hy = `❌ <b>ArTours — Ամրագրումը չեղարկված է</b>
+
+📋 <b>Ամրագրման համարը:</b> <code>${ctx.bookingNumber}</code>
+🗺 <b>Տուր/Տրանսֆեր:</b> ${ctx.hyTitle}
+📅 <b>Ուղևորության ամսաթիվը:</b> ${fmtDate(ctx.travelDate)}
+
+Ձեր ամրագրումը չեղարկվել է: Հարցերի դեպքում խնդրում ենք կապվել մեզ հետ:
+
+Հուսով ենք ձեզ նորից տեսնել: 🌟`;
+
+    return ru + DIVIDER + en + DIVIDER + hy;
 }
 
 /**
@@ -124,7 +158,16 @@ We hope you enjoyed your trip! We would love to see you again. 🌿
 
 Feel free to leave a review — it helps us improve. 🙏`;
 
-    return ru + DIVIDER + en;
+    const hy = `🏁 <b>ArTours — Ուղևորությունն ավարտված է:</b>
+
+📋 <b>Ամրագրման համարը:</b> <code>${ctx.bookingNumber}</code>
+🗺 <b>Տուր/Տրանսֆեր:</b> ${ctx.hyTitle}
+
+Հուսով ենք՝ ձեզ դուր եկավ ճանապարհորդությունը: Ուրախ կլինենք ձեզ նորից տեսնել: 🌿
+
+Խնդրում ենք թողնել կարծիք, դա կօգնի մեզ դառնալ էլ ավելի լավը: 🙏`;
+
+    return ru + DIVIDER + en + DIVIDER + hy;
 }
 
 /**
@@ -153,7 +196,18 @@ Tomorrow is the day! 🎒
 
 If you have any questions before your trip — we are here. Have a wonderful journey! 🌍`;
 
-    return ru + DIVIDER + en;
+    const hy = `⏰ <b>ArTours — Հիշեցում ուղևորության մասին</b>
+
+Արդեն վաղը: 🎒
+
+📋 <b>Ամրագրման համարը:</b> <code>${ctx.bookingNumber}</code>
+🗺 <b>Տուր/Տրանսֆեր:</b> ${ctx.hyTitle}
+👥 <b>Մարդկանց քանակը:</b> ${ctx.peopleCount}
+📅 <b>Ուղևորության ամսաթիվը:</b> ${fmtDate(ctx.travelDate)}
+
+Եթե ուղևորությունից առաջ ունեք հարցեր, մենք միշտ կապի մեջ ենք: Բարի ճանապարհորդություն: 🌍`;
+
+    return ru + DIVIDER + en + DIVIDER + hy;
 }
 
 // ─── Admin template ────────────────────────────────────────────────────────────
@@ -173,4 +227,21 @@ export function buildAdminNewBookingTemplate(ctx: NotificationContext): string {
 👥 <b>Количество человек:</b> ${ctx.peopleCount}
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
 💰 <b>Сумма:</b> ${ctx.totalPrice} AMD${ctx.notes ? `\n📝 <b>Примечания:</b> ${ctx.notes}` : ''}`;
+}
+
+/**
+ * Sent to the admin Telegram account when a booking is cancelled.
+ * Single language (Russian) — concise operational summary.
+ */
+export function buildAdminCancelledTemplate(ctx: NotificationContext): string {
+    return `❌ <b>Бронирование ОТМЕНЕНО — ArTours</b>
+
+📋 <b>Номер:</b> <code>${ctx.bookingNumber}</code>
+🗺 <b>Тур/Трансфер:</b> ${ctx.ruTitle}
+👤 <b>Клиент:</b> ${ctx.customerName}
+📧 <b>Email:</b> ${ctx.customerEmail}
+📞 <b>Телефон:</b> ${ctx.customerPhone}
+👥 <b>Количество человек:</b> ${ctx.peopleCount}
+📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
+💰 <b>Сумма:</b> ${ctx.totalPrice} AMD`;
 }

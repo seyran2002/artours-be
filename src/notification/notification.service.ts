@@ -4,6 +4,7 @@ import { TelegramService } from 'src/telegram/telegram.service';
 import { NotificationContext } from './notification.types';
 import {
     buildAdminNewBookingTemplate,
+    buildAdminCancelledTemplate,
     buildCancelledTemplate,
     buildConfirmedTemplate,
     buildCompletedTemplate,
@@ -104,10 +105,16 @@ export class NotificationService {
     async notifyCancelled(booking: any): Promise<void> {
         try {
             const ctx = this.toContext(booking);
-            if (!ctx.customerTelegramId) return;
 
-            const message = buildCancelledTemplate(ctx);
-            await this.telegramService.sendMessage(ctx.customerTelegramId, message);
+            // 1. Notify Admin
+            const adminMsg = buildAdminCancelledTemplate(ctx);
+            await this.telegramService.notifyAdmin(adminMsg);
+
+            // 2. Notify Customer (if connected to Telegram)
+            if (ctx.customerTelegramId) {
+                const message = buildCancelledTemplate(ctx);
+                await this.telegramService.sendMessage(ctx.customerTelegramId, message);
+            }
         } catch (error: any) {
             this.logger.error(
                 `Failed to send cancellation notification for ${booking?.bookingNumber}: ${error?.message}`,
