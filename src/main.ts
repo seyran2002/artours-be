@@ -6,7 +6,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'https://artours.am',
+    origin: [
+      'https://artours.am',
+      'https://www.artours.am',
+      'http://localhost:5173',
+    ],
     credentials: true,
   })
 
