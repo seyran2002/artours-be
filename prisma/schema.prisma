@@ -116,10 +116,6 @@ model Tour {
   ruDescription String
   hyDescription String
 
-  enLongDescription String
-  ruLongDescription String
-  hyLongDescription String
-
   mainImage String
   images    String[]
 

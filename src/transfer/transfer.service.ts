@@ -252,4 +252,10 @@ export class TransferService {
             },
         });
     }
+
+    async getTransfersCount(): Promise<{ count: number }> {
+        const count = await this.prisma.transfer.count();
+        return { count };
+    }
 }
+

@@ -46,6 +46,12 @@ export class TransferController {
         return this.transferService.findAll();
     }
 
+    // GET TRANSFERS COUNT
+    @Get('count')
+    getTransfersCount() {
+        return this.transferService.getTransfersCount();
+    }
+
     // GET POPULAR TRANSFERS
     @Get('popular')
     findPopular() {

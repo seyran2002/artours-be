@@ -159,6 +159,7 @@ export class TourService {
         // ── Generate unique slug ─────────────────────────────────────────────
         const baseSlug = this.buildBaseSlug(orderedTransfers.map((t) => t.slug));
         const slug = await this.ensureUniqueSlug(baseSlug);
+        console.log(162, slug);
 
         const parsedTagIds = typeof tagIds === 'string' ? JSON.parse(tagIds) : tagIds;
 

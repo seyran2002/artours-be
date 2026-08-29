@@ -213,6 +213,14 @@ If you have any questions before your trip — we are here. Have a wonderful jou
 // ─── Admin template ────────────────────────────────────────────────────────────
 
 /**
+ * Helper to build Telegram and WhatsApp contact links from customer phone number.
+ */
+function getContactLinks(phone: string): string {
+    const cleanPhone = phone.replace(/\D/g, '');
+    return ` (<a href="https://t.me/+${cleanPhone}">Telegram</a> | <a href="https://wa.me/${cleanPhone}">WhatsApp</a>)`;
+}
+
+/**
  * Sent to the admin Telegram account on every new booking.
  * Single language (Russian) — concise operational summary.
  */
@@ -223,7 +231,7 @@ export function buildAdminNewBookingTemplate(ctx: NotificationContext): string {
 🗺 <b>Тур/Трансфер:</b> ${ctx.ruTitle}
 👤 <b>Клиент:</b> ${ctx.customerName}
 📧 <b>Email:</b> ${ctx.customerEmail}
-📞 <b>Телефон:</b> ${ctx.customerPhone}
+📞 <b>Телефон:</b> ${ctx.customerPhone} ${getContactLinks(ctx.customerPhone)}
 👥 <b>Количество человек:</b> ${ctx.peopleCount}
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
 💰 <b>Сумма:</b> ${ctx.totalPrice} AMD${ctx.notes ? `\n📝 <b>Примечания:</b> ${ctx.notes}` : ''}`;
@@ -240,7 +248,7 @@ export function buildAdminCancelledTemplate(ctx: NotificationContext): string {
 🗺 <b>Тур/Трансфер:</b> ${ctx.ruTitle}
 👤 <b>Клиент:</b> ${ctx.customerName}
 📧 <b>Email:</b> ${ctx.customerEmail}
-📞 <b>Телефон:</b> ${ctx.customerPhone}
+📞 <b>Телефон:</b> ${ctx.customerPhone} ${getContactLinks(ctx.customerPhone)}
 👥 <b>Количество человек:</b> ${ctx.peopleCount}
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
 💰 <b>Сумма:</b> ${ctx.totalPrice} AMD`;
