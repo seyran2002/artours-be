@@ -253,3 +253,124 @@ export function buildAdminCancelledTemplate(ctx: NotificationContext): string {
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
 💰 <b>Сумма:</b> ${ctx.totalPrice} AMD`;
 }
+
+// ─── Review flow templates ───────────────────────────────────────────────────
+
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
+/**
+ * Returns inline keyboard attached to the completed booking message.
+ */
+export function buildCompletedReviewKeyboard() {
+    return {
+        inline_keyboard: [
+            [{ text: '⭐ Оставить отзыв', callback_data: 'review:ru' }],
+            [{ text: '⭐ Leave a review', callback_data: 'review:en' }],
+            [{ text: '⭐ Թողնել կարծիք', callback_data: 'review:hy' }],
+        ],
+    };
+}
+
+/**
+ * Prompt asking customer to rate their trip.
+ */
+export function buildRatingPrompt(lang: 'ru' | 'en' | 'hy'): string {
+    switch (lang) {
+        case 'ru':
+            return '⭐ Оцените вашу поездку от 1 до 5:';
+        case 'hy':
+            return '⭐ Գնահատեք ձեր ուղևորությունը 1-ից 5:';
+        case 'en':
+        default:
+            return '⭐ Please rate your trip from 1 to 5:';
+    }
+}
+
+/**
+ * Inline keyboard with 1-5 star rating buttons.
+ */
+export function buildRatingKeyboard() {
+    return {
+        inline_keyboard: [
+            [
+                { text: '⭐ 1', callback_data: 'rating:1' },
+                { text: '⭐ 2', callback_data: 'rating:2' },
+                { text: '⭐ 3', callback_data: 'rating:3' },
+                { text: '⭐ 4', callback_data: 'rating:4' },
+                { text: '⭐ 5', callback_data: 'rating:5' },
+            ],
+        ],
+    };
+}
+
+/**
+ * Prompt asking customer to write their review comment.
+ */
+export function buildCommentPrompt(lang: 'ru' | 'en' | 'hy'): string {
+    switch (lang) {
+        case 'ru':
+            return '💬 Пожалуйста, напишите ваш отзыв:';
+        case 'hy':
+            return '💬 Խնդրում ենք գրել ձեր կարծիքը:';
+        case 'en':
+        default:
+            return '💬 Please write your review:';
+    }
+}
+
+/**
+ * Template sent to the Admin Telegram chat when a customer submits a review.
+ */
+export function buildAdminReviewTemplate(data: {
+    bookingNumber: string;
+    tourOrTransferTitle: string;
+    rating: number;
+    language: string;
+    comment: string;
+}): string {
+    return `📝 <b>NEW CUSTOMER REVIEW</b>
+
+📋 <b>Booking:</b> <code>${escapeHtml(data.bookingNumber)}</code>
+🗺 <b>Tour/Transfer:</b> ${escapeHtml(data.tourOrTransferTitle)}
+⭐ <b>Rating:</b> ${data.rating}/5
+🌐 <b>Language:</b> ${escapeHtml(data.language)}
+
+💬 <b>Customer review:</b>
+${escapeHtml(data.comment)}`;
+}
+
+/**
+ * Localized confirmation sent to the customer after review is delivered to Admin.
+ */
+export function buildReviewConfirmationMessage(lang: 'ru' | 'en' | 'hy'): string {
+    switch (lang) {
+        case 'ru':
+            return 'Спасибо большое за ваш отзыв! Мы очень ценим ваше мнение. 🙏';
+        case 'hy':
+            return 'Շատ շնորհակալ ենք ձեր կարծիքի համար։ Մենք իսկապես գնահատում ենք ձեր կարծիքը։ 🙏';
+        case 'en':
+        default:
+            return 'Thank you so much for your review! We truly appreciate your feedback. 🙏';
+    }
+}
+
+/**
+ * Localized error message sent to customer if admin notification fails.
+ */
+export function buildReviewErrorMessage(lang: 'ru' | 'en' | 'hy'): string {
+    switch (lang) {
+        case 'ru':
+            return '❌ Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.';
+        case 'hy':
+            return '❌ Տեղի ունեցավ սխալ կարծիքն ուղարկելիս: Խնդրում ենք փորձել ավելի ուշ:';
+        case 'en':
+        default:
+            return '❌ An error occurred while sending your review. Please try again later.';
+    }
+}
+

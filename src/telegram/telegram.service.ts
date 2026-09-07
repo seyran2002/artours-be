@@ -1,11 +1,35 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import axios from 'axios';
+import {
+    buildAdminReviewTemplate,
+    buildCommentPrompt,
+    buildRatingKeyboard,
+    buildRatingPrompt,
+    buildReviewConfirmationMessage,
+    buildReviewErrorMessage,
+} from '../notification/notification.templates';
+
+export interface ReviewSession {
+    lang: 'ru' | 'en' | 'hy';
+    step: 'AWAITING_RATING' | 'AWAITING_COMMENT';
+    bookingNumber: string;
+    tourOrTransferTitle: string;
+    rating?: number;
+    updatedAt: number;
+}
+
+const LANGUAGE_NAMES: Record<'ru' | 'en' | 'hy', string> = {
+    ru: 'Russian',
+    en: 'English',
+    hy: 'Armenian',
+};
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
     private readonly logger = new Logger(TelegramService.name);
     private readonly botToken = process.env.TELEGRAM_BOT_TOKEN;
+    private readonly reviewSessions = new Map<string, ReviewSession>();
 
     constructor(private readonly prisma: PrismaService) { }
 
@@ -70,33 +94,56 @@ export class TelegramService implements OnModuleInit {
         }
     }
 
-    async sendMessage(chatId: string, text: string): Promise<void> {
+    async sendMessage(chatId: string, text: string, replyMarkup?: any): Promise<boolean> {
         try {
+            const payload: any = {
+                chat_id: chatId,
+                text,
+                parse_mode: 'HTML',
+            };
+            if (replyMarkup) {
+                payload.reply_markup = replyMarkup;
+            }
+
             await axios.post(
                 `https://api.telegram.org/bot${this.botToken}/sendMessage`,
-                {
-                    chat_id: chatId,
-                    text,
-                    parse_mode: 'HTML',
-                },
+                payload,
             );
             this.logger.log(`Message sent to chatId=${chatId}`);
+            return true;
         } catch (error: any) {
             this.logger.error(
                 `Failed to send Telegram message to chatId=${chatId}: ${error?.message}`,
                 error?.stack,
             );
-            // Do NOT rethrow — Telegram failures must never break booking operations
+            return false;
         }
     }
 
-    async notifyAdmin(text: string): Promise<void> {
+    async answerCallbackQuery(callbackQueryId: string, text?: string): Promise<void> {
+        try {
+            await axios.post(
+                `https://api.telegram.org/bot${this.botToken}/answerCallbackQuery`,
+                {
+                    callback_query_id: callbackQueryId,
+                    text,
+                },
+            );
+        } catch (error: any) {
+            this.logger.error(
+                `Failed to answer callback query ${callbackQueryId}: ${error?.message}`,
+                error?.stack,
+            );
+        }
+    }
+
+    async notifyAdmin(text: string): Promise<boolean> {
         const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
         if (!adminChatId) {
             this.logger.warn('TELEGRAM_ADMIN_CHAT_ID is not set — skipping admin notification');
-            return;
+            return false;
         }
-        await this.sendMessage(adminChatId, text);
+        return await this.sendMessage(adminChatId, text);
     }
 
     /**
@@ -147,10 +194,19 @@ export class TelegramService implements OnModuleInit {
 
     /**
      * Handles a raw Telegram webhook update.
-     * Supports the /start <bookingNumber> command sent when the user clicks
-     * the deep-link button in the booking confirmation email.
+     * Supports:
+     * 1. /start <bookingNumber> deep-linking
+     * 2. callback_query events for the review flow (language selection & rating)
+     * 3. text messages for submitting the review comment
      */
     async handleWebhook(body: any): Promise<void> {
+        // 1. Handle callback query (inline button clicks)
+        if (body?.callback_query) {
+            await this.handleCallbackQuery(body.callback_query);
+            return;
+        }
+
+        // 2. Handle message
         const message = body?.message;
         if (!message) return;
 
@@ -177,6 +233,135 @@ export class TelegramService implements OnModuleInit {
             }
 
             await this.linkTelegram(bookingNumber, chatId);
+            return;
+        }
+
+        // Check if user is actively writing a review comment
+        const session = this.reviewSessions.get(chatId);
+        if (session && session.step === 'AWAITING_COMMENT' && text.trim()) {
+            await this.handleReviewComment(chatId, session, text.trim());
+        }
+    }
+
+    private async handleCallbackQuery(callbackQuery: any): Promise<void> {
+        const callbackQueryId = callbackQuery.id;
+        const data: string = callbackQuery.data ?? '';
+        const chatId = String(callbackQuery.message?.chat?.id ?? callbackQuery.from?.id);
+
+        if (!chatId) return;
+
+        // Step 1: Handle Review Language Button click (review:ru | review:en | review:hy)
+        const reviewMatch = data.match(/^review:(ru|en|hy)$/);
+        if (reviewMatch) {
+            const lang = reviewMatch[1] as 'ru' | 'en' | 'hy';
+            await this.answerCallbackQuery(callbackQueryId);
+
+            const booking = await this.prisma.booking.findFirst({
+                where: { customerTelegramId: chatId },
+                orderBy: [{ updatedAt: 'desc' }],
+                include: { tour: true, transfer: true },
+            });
+
+            let title = 'Tour / Transfer';
+            if (booking) {
+                if (lang === 'ru') {
+                    title =
+                        booking.tour?.ruTitle ??
+                        booking.transfer?.ruTitle ??
+                        booking.tour?.enTitle ??
+                        booking.transfer?.enTitle ??
+                        'Тур / Трансфер';
+                } else if (lang === 'hy') {
+                    title =
+                        booking.tour?.hyTitle ??
+                        booking.transfer?.hyTitle ??
+                        booking.tour?.enTitle ??
+                        booking.transfer?.enTitle ??
+                        'Տուր / Տրանսֆեր';
+                } else {
+                    title =
+                        booking.tour?.enTitle ??
+                        booking.transfer?.enTitle ??
+                        'Tour / Transfer';
+                }
+            }
+
+            this.reviewSessions.set(chatId, {
+                lang,
+                step: 'AWAITING_RATING',
+                bookingNumber: booking?.bookingNumber ?? 'N/A',
+                tourOrTransferTitle: title,
+                updatedAt: Date.now(),
+            });
+
+            await this.sendMessage(
+                chatId,
+                buildRatingPrompt(lang),
+                buildRatingKeyboard(),
+            );
+            return;
+        }
+
+        // Step 2: Handle Rating Button click (rating:1 .. rating:5)
+        const ratingMatch = data.match(/^rating:([1-5])$/);
+        if (ratingMatch) {
+            const rating = parseInt(ratingMatch[1], 10);
+            await this.answerCallbackQuery(callbackQueryId);
+
+            let session = this.reviewSessions.get(chatId);
+            if (session) {
+                session.rating = rating;
+                session.step = 'AWAITING_COMMENT';
+                session.updatedAt = Date.now();
+            } else {
+                session = {
+                    lang: 'en',
+                    step: 'AWAITING_COMMENT',
+                    bookingNumber: 'N/A',
+                    tourOrTransferTitle: 'Tour / Transfer',
+                    rating,
+                    updatedAt: Date.now(),
+                };
+                this.reviewSessions.set(chatId, session);
+            }
+
+            await this.sendMessage(
+                chatId,
+                buildCommentPrompt(session.lang),
+            );
+            return;
+        }
+    }
+
+    private async handleReviewComment(
+        chatId: string,
+        session: ReviewSession,
+        comment: string,
+    ): Promise<void> {
+        const languageName = LANGUAGE_NAMES[session.lang] ?? 'English';
+        const adminMsg = buildAdminReviewTemplate({
+            bookingNumber: session.bookingNumber,
+            tourOrTransferTitle: session.tourOrTransferTitle,
+            rating: session.rating ?? 5,
+            language: languageName,
+            comment,
+        });
+
+        const success = await this.notifyAdmin(adminMsg);
+        if (success) {
+            this.reviewSessions.delete(chatId);
+            await this.sendMessage(
+                chatId,
+                buildReviewConfirmationMessage(session.lang),
+            );
+        } else {
+            this.logger.error(
+                `Failed to deliver review for booking ${session.bookingNumber} to admin Telegram chat`,
+            );
+            await this.sendMessage(
+                chatId,
+                buildReviewErrorMessage(session.lang),
+            );
         }
     }
 }

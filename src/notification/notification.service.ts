@@ -8,6 +8,7 @@ import {
     buildCancelledTemplate,
     buildConfirmedTemplate,
     buildCompletedTemplate,
+    buildCompletedReviewKeyboard,
     buildNewBookingTemplate,
     buildReminderTemplate,
 } from './notification.templates';
@@ -80,16 +81,23 @@ export class NotificationService {
             if (!ctx.customerTelegramId) return;
 
             let message: string | null = null;
+            let replyMarkup: any = undefined;
+
             if (ctx.status === BookingStatus.CONFIRMED) {
                 message = buildConfirmedTemplate(ctx);
             } else if (ctx.status === BookingStatus.CANCELLED) {
                 message = buildCancelledTemplate(ctx);
             } else if (ctx.status === BookingStatus.COMPLETED) {
                 message = buildCompletedTemplate(ctx);
+                replyMarkup = buildCompletedReviewKeyboard();
             }
 
             if (message) {
-                await this.telegramService.sendMessage(ctx.customerTelegramId, message);
+                await this.telegramService.sendMessage(
+                    ctx.customerTelegramId,
+                    message,
+                    replyMarkup,
+                );
             }
         } catch (error: any) {
             this.logger.error(
