@@ -4,6 +4,7 @@ import {
     IsEnum,
     IsInt,
     IsNotEmpty,
+    IsNumber,
     IsOptional,
     IsString,
     IsUUID,
@@ -32,6 +33,11 @@ export class CreateBookingDto {
     @Min(1, { message: 'peopleCount must be at least 1' })
     @Type(() => Number)
     peopleCount!: number;
+
+    @IsNumber()
+    @Min(0, { message: 'totalPrice must be positive' })
+    @Type(() => Number)
+    totalPrice!: number;
 
     /**
      * Travel date — must be tomorrow or later (no past dates, no today).

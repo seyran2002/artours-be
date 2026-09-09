@@ -64,7 +64,7 @@ export class BookingService {
         type: BookingType,
         tourId?: string,
         transferId?: string,
-    ): Promise<{ minimumPrice: number }> {
+    ): Promise<void> {
         if (type === BookingType.TOUR) {
             if (!tourId) {
                 throw new BadRequestException(
@@ -79,12 +79,12 @@ export class BookingService {
 
             const tour = await this.prisma.tour.findUnique({
                 where: { id: tourId },
-                select: { minimumPrice: true },
+                select: { id: true },
             });
             if (!tour) {
                 throw new NotFoundException(`Tour with id "${tourId}" not found`);
             }
-            return { minimumPrice: tour.minimumPrice };
+            return;
         }
 
         // type === TRANSFER
@@ -101,36 +101,40 @@ export class BookingService {
 
         const transfer = await this.prisma.transfer.findUnique({
             where: { id: transferId },
-            select: { minimumPrice: true },
+            select: { id: true },
         });
         if (!transfer) {
             throw new NotFoundException(
                 `Transfer with id "${transferId}" not found`,
             );
         }
-        return { minimumPrice: transfer.minimumPrice };
     }
 
     // Public endpoints
     async create(dto: CreateBookingDto) {
-        const { type, tourId, transferId, peopleCount, ...customerDetails } =
-            dto;
+        const {
+            type,
+            tourId,
+            transferId,
+            peopleCount,
+            totalPrice,
+            ...customerDetails
+        } = dto;
 
-        const { minimumPrice } = await this.validateBookingTarget(
+        await this.validateBookingTarget(
             type,
             tourId,
             transferId,
         );
 
         const bookingNumber = await this.generateUniqueBookingNumber();
-        const totalPrice = new Prisma.Decimal(minimumPrice * peopleCount);
 
         const booking = await this.prisma.booking.create({
             data: {
                 bookingNumber,
                 type,
                 peopleCount,
-                totalPrice,
+                totalPrice: new Prisma.Decimal(totalPrice),
                 ...(type === BookingType.TOUR
                     ? { tourId: tourId! }
                     : { transferId: transferId! }),

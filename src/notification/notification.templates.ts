@@ -24,7 +24,7 @@ export function buildNewBookingTemplate(ctx: NotificationContext): string {
 👤 <b>Имя:</b> ${ctx.customerName}
 👥 <b>Количество человек:</b> ${ctx.peopleCount}
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Сумма:</b> ${ctx.totalPrice} AMD
+💰 <b>Сумма:</b> ${ctx.totalPrice} EUR
 
 ⏳ Ваша заявка обрабатывается. Мы свяжемся с вами в ближайшее время для подтверждения.
 
@@ -37,7 +37,7 @@ export function buildNewBookingTemplate(ctx: NotificationContext): string {
 👤 <b>Name:</b> ${ctx.customerName}
 👥 <b>People:</b> ${ctx.peopleCount}
 📅 <b>Travel date:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Total:</b> ${ctx.totalPrice} AMD
+💰 <b>Total:</b> ${ctx.totalPrice} EUR
 
 ⏳ Your request is being processed. We will contact you shortly to confirm.
 
@@ -50,7 +50,7 @@ Thank you for choosing ArTours! 🙏`;
 👤 <b>Անուն:</b> ${ctx.customerName}
 👥 <b>Մարդկանց քանակը:</b> ${ctx.peopleCount}
 📅 <b>Ուղևորության ամսաթիվը:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Գումարը:</b> ${ctx.totalPrice} AMD
+💰 <b>Գումարը:</b> ${ctx.totalPrice} EUR
 
 ⏳ Ձեր հայտը մշակվում է: Հաստատման համար մենք կապ կհաստատենք ձեզ հետ մոտակա ժամանակներս:
 
@@ -70,7 +70,7 @@ export function buildConfirmedTemplate(ctx: NotificationContext): string {
 👤 <b>Имя:</b> ${ctx.customerName}
 👥 <b>Количество человек:</b> ${ctx.peopleCount}
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Сумма:</b> ${ctx.totalPrice} AMD
+💰 <b>Сумма:</b> ${ctx.totalPrice} EUR
 
 🎉 Ваше бронирование подтверждено! Ждём вас в путешествие!`;
 
@@ -81,7 +81,7 @@ export function buildConfirmedTemplate(ctx: NotificationContext): string {
 👤 <b>Name:</b> ${ctx.customerName}
 👥 <b>People:</b> ${ctx.peopleCount}
 📅 <b>Travel date:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Total:</b> ${ctx.totalPrice} AMD
+💰 <b>Total:</b> ${ctx.totalPrice} EUR
 
 🎉 Your booking is confirmed! We look forward to your trip!`;
 
@@ -92,7 +92,7 @@ export function buildConfirmedTemplate(ctx: NotificationContext): string {
 👤 <b>Անուն:</b> ${ctx.customerName}
 👥 <b>Մարդկանց քանակը:</b> ${ctx.peopleCount}
 📅 <b>Ուղևորության ամսաթիվը:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Գումարը:</b> ${ctx.totalPrice} AMD
+💰 <b>Գումարը:</b> ${ctx.totalPrice} EUR
 
 🎉 Ձեր ամրագրումը հաստատված է: Սպասում ենք ձեզ ճանապարհորդության:`;
 
@@ -234,7 +234,7 @@ export function buildAdminNewBookingTemplate(ctx: NotificationContext): string {
 📞 <b>Телефон:</b> ${ctx.customerPhone} ${getContactLinks(ctx.customerPhone)}
 👥 <b>Количество человек:</b> ${ctx.peopleCount}
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Сумма:</b> ${ctx.totalPrice} AMD${ctx.notes ? `\n📝 <b>Примечания:</b> ${ctx.notes}` : ''}`;
+💰 <b>Сумма:</b> ${ctx.totalPrice} EUR${ctx.notes ? `\n📝 <b>Примечания:</b> ${ctx.notes}` : ''}`;
 }
 
 /**
@@ -251,7 +251,7 @@ export function buildAdminCancelledTemplate(ctx: NotificationContext): string {
 📞 <b>Телефон:</b> ${ctx.customerPhone} ${getContactLinks(ctx.customerPhone)}
 👥 <b>Количество человек:</b> ${ctx.peopleCount}
 📅 <b>Дата поездки:</b> ${fmtDate(ctx.travelDate)}
-💰 <b>Сумма:</b> ${ctx.totalPrice} AMD`;
+💰 <b>Сумма:</b> ${ctx.totalPrice} EUR`;
 }
 
 // ─── Review flow templates ───────────────────────────────────────────────────
