@@ -12,13 +12,13 @@ import {
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { TransferService } from './transfer.service';
-import { CreateTransferDto } from './dto/create-transfer.dto';
-import { UpdateTransferDto } from './dto/update-transfer.dto';
+import { LocationService } from './location.service';
+import { CreateLocationDto } from './dto/create-location.dto';
+import { UpdateLocationDto } from './dto/update-location.dto';
 
-@Controller('transfers')
-export class TransferController {
-    constructor(private readonly transferService: TransferService) { }
+@Controller('locations')
+export class LocationController {
+    constructor(private readonly locationService: LocationService) { }
 
     // CREATE
     @UseGuards(JwtAuthGuard)
@@ -30,40 +30,39 @@ export class TransferController {
         ]),
     )
     create(
-        @Body() dto: CreateTransferDto,
+        @Body() dto: CreateLocationDto,
         @UploadedFiles()
         files: {
             mainImage?: Express.Multer.File[];
             images?: Express.Multer.File[];
         },
     ) {
-        return this.transferService.create(dto, files);
+        return this.locationService.create(dto, files);
     }
 
     // GET ALL
     @Get()
     findAll() {
-        return this.transferService.findAll();
+        return this.locationService.findAll();
     }
 
-    // GET TRANSFERS COUNT
+    // GET LOCATIONS COUNT
     @Get('count')
-    getTransfersCount() {
-        return this.transferService.getTransfersCount();
+    getLocationsCount() {
+        return this.locationService.getLocationsCount();
     }
 
-    // GET POPULAR TRANSFERS
+    // GET POPULAR LOCATIONS
     @Get('popular')
     findPopular() {
-        return this.transferService.findPopular()
+        return this.locationService.findPopular();
     }
 
     // GET ONE BY ID
     @Get(':id')
     findOne(@Param('id') id: string) {
-        return this.transferService.findOne(id)
+        return this.locationService.findOne(id);
     }
-
 
     // UPDATE
     @UseGuards(JwtAuthGuard)
@@ -76,20 +75,20 @@ export class TransferController {
     )
     update(
         @Param('id') id: string,
-        @Body() dto: UpdateTransferDto,
+        @Body() dto: UpdateLocationDto,
         @UploadedFiles()
         files: {
             mainImage?: Express.Multer.File[];
             images?: Express.Multer.File[];
         },
     ) {
-        return this.transferService.update(id, dto, files);
+        return this.locationService.update(id, dto, files);
     }
 
     // DELETE
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
     remove(@Param('id') id: string) {
-        return this.transferService.remove(id);
+        return this.locationService.remove(id);
     }
 }

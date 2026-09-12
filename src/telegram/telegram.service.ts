@@ -14,7 +14,7 @@ export interface ReviewSession {
     lang: 'ru' | 'en' | 'hy';
     step: 'AWAITING_RATING' | 'AWAITING_COMMENT';
     bookingNumber: string;
-    tourOrTransferTitle: string;
+    tourOrLocationTitle: string;
     rating?: number;
     updatedAt: number;
 }
@@ -259,30 +259,30 @@ export class TelegramService implements OnModuleInit {
             const booking = await this.prisma.booking.findFirst({
                 where: { customerTelegramId: chatId },
                 orderBy: [{ updatedAt: 'desc' }],
-                include: { tour: true, transfer: true },
+                include: { tour: true, location: true },
             });
 
-            let title = 'Tour / Transfer';
+            let title = 'Tour / Location';
             if (booking) {
                 if (lang === 'ru') {
                     title =
                         booking.tour?.ruTitle ??
-                        booking.transfer?.ruTitle ??
+                        booking.location?.ruTitle ??
                         booking.tour?.enTitle ??
-                        booking.transfer?.enTitle ??
-                        'Тур / Трансфер';
+                        booking.location?.enTitle ??
+                        'Тур / Локация';
                 } else if (lang === 'hy') {
                     title =
                         booking.tour?.hyTitle ??
-                        booking.transfer?.hyTitle ??
+                        booking.location?.hyTitle ??
                         booking.tour?.enTitle ??
-                        booking.transfer?.enTitle ??
-                        'Տուր / Տրանսֆեր';
+                        booking.location?.enTitle ??
+                        'Տուր / Լոկացիա';
                 } else {
                     title =
                         booking.tour?.enTitle ??
-                        booking.transfer?.enTitle ??
-                        'Tour / Transfer';
+                        booking.location?.enTitle ??
+                        'Tour / Location';
                 }
             }
 
@@ -290,7 +290,7 @@ export class TelegramService implements OnModuleInit {
                 lang,
                 step: 'AWAITING_RATING',
                 bookingNumber: booking?.bookingNumber ?? 'N/A',
-                tourOrTransferTitle: title,
+                tourOrLocationTitle: title,
                 updatedAt: Date.now(),
             });
 
@@ -318,7 +318,7 @@ export class TelegramService implements OnModuleInit {
                     lang: 'en',
                     step: 'AWAITING_COMMENT',
                     bookingNumber: 'N/A',
-                    tourOrTransferTitle: 'Tour / Transfer',
+                    tourOrLocationTitle: 'Tour / Location',
                     rating,
                     updatedAt: Date.now(),
                 };
@@ -341,7 +341,7 @@ export class TelegramService implements OnModuleInit {
         const languageName = LANGUAGE_NAMES[session.lang] ?? 'English';
         const adminMsg = buildAdminReviewTemplate({
             bookingNumber: session.bookingNumber,
-            tourOrTransferTitle: session.tourOrTransferTitle,
+            tourOrLocationTitle: session.tourOrLocationTitle,
             rating: session.rating ?? 5,
             language: languageName,
             comment,

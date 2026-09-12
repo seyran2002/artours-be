@@ -8,7 +8,7 @@ interface EntranceFees {
     fee: number;
 }
 
-export class CreateTransferDto {
+export class CreateLocationDto {
     @IsString()
     @IsNotEmpty()
     fromPlaceId!: string;

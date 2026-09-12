@@ -17,7 +17,7 @@ const BOOKING_INCLUDE = {
             duration: true,
         },
     },
-    transfer: {
+    location: {
         select: {
             id: true,
             slug: true,

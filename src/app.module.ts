@@ -5,7 +5,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { TagModule } from './tag/tag.module';
-import { TransferModule } from './transfer/transfer.module';
+import { LocationModule } from './location/location.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { TourModule } from './tour/tour.module';
 import { SearchModule } from './search/search.module';
@@ -20,7 +20,7 @@ import { ContactModule } from './contact/contact.module';
     PrismaModule,
     AuthModule,
     TagModule,
-    TransferModule,
+    LocationModule,
     CloudinaryModule,
     TourModule,
     SearchModule,

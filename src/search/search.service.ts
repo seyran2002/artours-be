@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TourService } from 'src/tour/tour.service';
-import { TransferService } from 'src/transfer/transfer.service';
+import { LocationService } from 'src/location/location.service';
 import {
     PaginatedSearchResponse,
     SearchResult,
@@ -9,7 +9,7 @@ import {
 
 interface CountCacheEntry {
     tourTotal: number;
-    transferTotal: number;
+    locationTotal: number;
     cachedAt: number; // Date.now()
 }
 
@@ -22,7 +22,7 @@ export class SearchService {
 
     constructor(
         private readonly tourService: TourService,
-        private readonly transferService: TransferService,
+        private readonly locationService: LocationService,
     ) { }
 
     async search(
@@ -46,22 +46,22 @@ export class SearchService {
             Date.now() - cached.cachedAt < COUNT_TTL_MS;
 
         // Run data queries always; run count queries only when cache is stale/missing
-        const [tours, transfers, counts] = await Promise.all([
+        const [tours, locations, counts] = await Promise.all([
             this.tourService.search(q, perType, skip),
-            this.transferService.search(q, perType, skip),
+            this.locationService.search(q, perType, skip),
             isFresh
-                ? Promise.resolve({ tourTotal: cached.tourTotal, transferTotal: cached.transferTotal })
+                ? Promise.resolve({ tourTotal: cached.tourTotal, locationTotal: cached.locationTotal })
                 : Promise.all([
                     this.tourService.searchCount(q),
-                    this.transferService.searchCount(q),
-                  ]).then(([tourTotal, transferTotal]) => {
+                    this.locationService.searchCount(q),
+                  ]).then(([tourTotal, locationTotal]) => {
                     // Store fresh counts in cache
                     this.countCache.set(cacheKey, {
                         tourTotal,
-                        transferTotal,
+                        locationTotal,
                         cachedAt: Date.now(),
                     });
-                    return { tourTotal, transferTotal };
+                    return { tourTotal, locationTotal };
                   }),
         ]);
 
@@ -75,9 +75,9 @@ export class SearchService {
             image: t.mainImage,
         }));
 
-        const transferResults: SearchResult[] = transfers.map((t) => ({
+        const locationResults: SearchResult[] = locations.map((t) => ({
             id: t.id,
-            type: SearchResultType.TRANSFER,
+            type: SearchResultType.LOCATION,
             slug: t.slug,
             enTitle: t.enTitle,
             ruTitle: t.ruTitle,
@@ -88,8 +88,8 @@ export class SearchService {
         return {
             page: safePage,
             limit: safeLimit,
-            total: counts.tourTotal + counts.transferTotal,
-            data: [...tourResults, ...transferResults],
+            total: counts.tourTotal + counts.locationTotal,
+            data: [...tourResults, ...locationResults],
         };
     }
 }

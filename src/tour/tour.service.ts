@@ -8,7 +8,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { Prisma } from '@prisma/client';
-import { TourWithTransfers } from 'src/types/tour.type';
+import { TourWithLocations } from 'src/types/tour.type';
 
 type UploadFiles = {
     mainImage?: Express.Multer.File[];
@@ -22,8 +22,8 @@ export class TourService {
         private readonly cloudinaryService: CloudinaryService,
     ) { }
 
-    private extractWaypoints(transferSlug: string): string[] {
-        const withoutSuffix = transferSlug.replace(/-transfer$/, '');
+    private extractWaypoints(locationSlug: string): string[] {
+        const withoutSuffix = locationSlug.replace(/-(transfer|location)$/, '');
         const parts = withoutSuffix.split('-');
         if (parts.length === 0) return [];
 
@@ -31,8 +31,8 @@ export class TourService {
         return parts.filter((p) => p !== origin);
     }
 
-    private buildBaseSlug(transferSlugs: string[]): string {
-        const allWaypoints = transferSlugs.flatMap((s) =>
+    private buildBaseSlug(locationSlugs: string[]): string {
+        const allWaypoints = locationSlugs.flatMap((s) =>
             this.extractWaypoints(s),
         );
 
@@ -58,12 +58,11 @@ export class TourService {
                     slug: candidate,
                     ...(excludeId ? { NOT: { id: excludeId } } : {}),
                 },
-                select: { id: true },
             });
 
             if (!existing) return candidate;
 
-            counter += 1;
+            counter++;
             candidate = `${base}-${counter}`;
         }
     }
@@ -71,17 +70,18 @@ export class TourService {
     // ─── CRUD ─────────────────────────────────────────────────────────────────
 
     /**
-     * Create a tour atomically:
-     *  1. Upload images to Cloudinary.
-     *  2. Validate all transferIds exist and fetch their slugs.
-     *  3. Generate a unique tour slug from the transfer slugs.
-     *  4. Wrap Tour + TourTransfer creation in a Prisma transaction.
+     * Create a Tour:
+     *  1. Upload mainImage and additional images to Cloudinary (folder: "tours").
+     *  2. Validate all locationIds exist and fetch their slugs.
+     *  3. Generate a unique tour slug from the location slugs.
+     *  4. Wrap Tour + TourLocation creation in a Prisma transaction.
      */
     async create(
         dto: CreateTourDto,
         files?: UploadFiles,
-    ): Promise<TourWithTransfers> {
-        const { transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto;
+    ): Promise<TourWithLocations> {
+        const { locationIds, transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto as any;
+        const targetLocationIds = locationIds || transferIds || [];
 
         // Compute isOvernight and clean starRating/mealOptions if necessary
         let isOvernight = false;
@@ -137,29 +137,28 @@ export class TourService {
         }
         const finalImages = [...dtoImages, ...imageUrls];
 
-        // ── Validate & order transfers ───────────────────────────────────────
-        const transfers = await this.prisma.transfer.findMany({
-            where: { id: { in: transferIds } },
+        // ── Validate & order locations ───────────────────────────────────────
+        const locations = await this.prisma.location.findMany({
+            where: { id: { in: targetLocationIds } },
             select: { id: true, slug: true },
         });
 
-        if (transfers.length !== transferIds.length) {
-            const foundIds = new Set(transfers.map((t) => t.id));
-            const missing = transferIds.filter((id) => !foundIds.has(id));
+        if (locations.length !== targetLocationIds.length) {
+            const foundIds = new Set(locations.map((t) => t.id));
+            const missing = targetLocationIds.filter((id: string) => !foundIds.has(id));
             throw new BadRequestException(
-                `Transfers not found: ${missing.join(', ')}`,
+                `Locations not found: ${missing.join(', ')}`,
             );
         }
 
         // Preserve caller-supplied order
-        const orderedTransfers = transferIds.map(
-            (id) => transfers.find((t) => t.id === id)!,
+        const orderedLocations = targetLocationIds.map(
+            (id: string) => locations.find((t) => t.id === id)!,
         );
 
         // ── Generate unique slug ─────────────────────────────────────────────
-        const baseSlug = this.buildBaseSlug(orderedTransfers.map((t) => t.slug));
+        const baseSlug = this.buildBaseSlug(orderedLocations.map((t) => t.slug));
         const slug = await this.ensureUniqueSlug(baseSlug);
-        console.log(162, slug);
 
         const parsedTagIds = typeof tagIds === 'string' ? JSON.parse(tagIds) : tagIds;
 
@@ -179,16 +178,16 @@ export class TourService {
 
                     ...(parsedTagIds?.length && {
                         tags: {
-                            connect: parsedTagIds.map(id => ({ id })),
+                            connect: parsedTagIds.map((id: string) => ({ id })),
                         },
                     }),
                 },
             });
 
-            await tx.tourTransfer.createMany({
-                data: orderedTransfers.map((t, index) => ({
+            await tx.tourLocation.createMany({
+                data: orderedLocations.map((t, index) => ({
                     tourId: created.id,
-                    transferId: t.id,
+                    locationId: t.id,
                     order: index + 1,
                 })),
             });
@@ -196,37 +195,37 @@ export class TourService {
             return tx.tour.findUniqueOrThrow({
                 where: { id: created.id },
                 include: {
-                    transfers: {
+                    locations: {
                         orderBy: { order: 'asc' },
-                        include: { transfer: true },
+                        include: { location: true },
                     },
                 },
             });
         });
 
-        return tour as TourWithTransfers;
+        return tour as TourWithLocations;
     }
 
-    async findAll(): Promise<TourWithTransfers[]> {
+    async findAll(): Promise<TourWithLocations[]> {
         const tours = await this.prisma.tour.findMany({
             include: {
-                transfers: {
+                locations: {
                     orderBy: { order: 'asc' },
-                    include: { transfer: true },
+                    include: { location: true },
                 },
                 tags: true,
             },
         });
-        return tours as TourWithTransfers[];
+        return tours as TourWithLocations[];
     }
 
-    async findOne(id: string): Promise<TourWithTransfers> {
+    async findOne(id: string): Promise<TourWithLocations> {
         const tour = await this.prisma.tour.findUnique({
             where: { id },
             include: {
-                transfers: {
+                locations: {
                     orderBy: { order: 'asc' },
-                    include: { transfer: true },
+                    include: { location: true },
                 },
             },
         });
@@ -235,16 +234,16 @@ export class TourService {
             throw new NotFoundException(`Tour with id "${id}" not found`);
         }
 
-        return tour as TourWithTransfers;
+        return tour as TourWithLocations;
     }
 
-    async findBySlug(slug: string): Promise<TourWithTransfers> {
+    async findBySlug(slug: string): Promise<TourWithLocations> {
         const tour = await this.prisma.tour.findFirst({
             where: { slug },
             include: {
-                transfers: {
+                locations: {
                     orderBy: { order: 'asc' },
-                    include: { transfer: true },
+                    include: { location: true },
                 },
             },
         });
@@ -253,10 +252,10 @@ export class TourService {
             throw new NotFoundException(`Tour with slug "${slug}" not found`);
         }
 
-        return tour as TourWithTransfers;
+        return tour as TourWithLocations;
     }
 
-    async findPopular(): Promise<TourWithTransfers[]> {
+    async findPopular(): Promise<TourWithLocations[]> {
         return await this.prisma.tour.findMany({
             where: {
                 tags: {
@@ -268,27 +267,28 @@ export class TourService {
             take: 4,
             include: {
                 tags: true,
-                transfers: {
-                    include: { transfer: true },
+                locations: {
+                    include: { location: true },
                 },
             },
-        }) as TourWithTransfers[];
+        }) as TourWithLocations[];
     }
 
     async update(
         id: string,
         dto: UpdateTourDto,
         files?: UploadFiles,
-    ): Promise<TourWithTransfers> {
+    ): Promise<TourWithLocations> {
         const existing = await this.prisma.tour.findUnique({ where: { id } });
         if (!existing) {
             throw new NotFoundException(`Tour with id "${id}" not found`);
         }
 
-        const { transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto;
+        const { locationIds, transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto as any;
+        const targetLocationIds = locationIds || transferIds;
 
         // Compute isOvernight and clean starRating/mealOptions if necessary
-        const durationStr = dto.duration !== undefined ? dto.duration : existing.duration;
+        const durationStr = dto.duration !== undefined ? dto.duration : (existing as any).duration;
         let isOvernight = existing.isOvernight;
         if (durationStr) {
             try {
@@ -318,7 +318,7 @@ export class TourService {
         }
 
         // ── mainImage: file upload takes priority, falls back to dto value,
-        //    then keeps the existing DB value (transfer pattern) ─────────────
+        //    then keeps the existing DB value ─────────────────────────────────
         let mainImageUrl = existing.mainImage;
         if (files?.mainImage && files.mainImage.length > 0) {
             const uploadResult = await this.cloudinaryService.uploadImage(
@@ -339,7 +339,7 @@ export class TourService {
                 existingImagesKept = images;
             }
         } else {
-            existingImagesKept = existing.images || [];
+            existingImagesKept = (existing.images as string[]) || [];
         }
 
         let newImageUrls: string[] = [];
@@ -354,32 +354,32 @@ export class TourService {
         const tour = await this.prisma.$transaction(async (tx) => {
             let slug = existing.slug;
 
-            if (transferIds && transferIds.length > 0) {
-                const transfers = await tx.transfer.findMany({
-                    where: { id: { in: transferIds } },
+            if (targetLocationIds && targetLocationIds.length > 0) {
+                const locations = await tx.location.findMany({
+                    where: { id: { in: targetLocationIds } },
                     select: { id: true, slug: true },
                 });
 
-                if (transfers.length !== transferIds.length) {
-                    const foundIds = new Set(transfers.map((t) => t.id));
-                    const missing = transferIds.filter((tid) => !foundIds.has(tid));
+                if (locations.length !== targetLocationIds.length) {
+                    const foundIds = new Set(locations.map((t) => t.id));
+                    const missing = targetLocationIds.filter((tid: string) => !foundIds.has(tid));
                     throw new BadRequestException(
-                        `Transfers not found: ${missing.join(', ')}`,
+                        `Locations not found: ${missing.join(', ')}`,
                     );
                 }
 
-                const ordered = transferIds.map(
-                    (tid) => transfers.find((t) => t.id === tid)!,
+                const ordered = targetLocationIds.map(
+                    (tid: string) => locations.find((t) => t.id === tid)!,
                 );
 
                 const base = this.buildBaseSlug(ordered.map((t) => t.slug));
                 slug = await this.ensureUniqueSlug(base, id);
 
-                await tx.tourTransfer.deleteMany({ where: { tourId: id } });
-                await tx.tourTransfer.createMany({
+                await tx.tourLocation.deleteMany({ where: { tourId: id } });
+                await tx.tourLocation.createMany({
                     data: ordered.map((t, index) => ({
                         tourId: id,
-                        transferId: t.id,
+                        locationId: t.id,
                         order: index + 1,
                     })),
                 });
@@ -401,20 +401,20 @@ export class TourService {
                     ...(entranceFees !== undefined ? { entranceFees } : {}),
                     ...(parsedTagIds?.length && {
                         tags: {
-                            set: parsedTagIds.map(id => ({ id })),
+                            set: parsedTagIds.map((id: string) => ({ id })),
                         },
                     }),
                 },
                 include: {
-                    transfers: {
+                    locations: {
                         orderBy: { order: 'asc' },
-                        include: { transfer: true },
+                        include: { location: true },
                     },
                 },
             });
         });
 
-        return tour as TourWithTransfers;
+        return tour as TourWithLocations;
     }
 
     async remove(id: string): Promise<{ id: string }> {
@@ -444,6 +444,7 @@ export class TourService {
                 ruTitle: true,
                 hyTitle: true,
                 mainImage: true,
+                type: true,
             },
         });
     }

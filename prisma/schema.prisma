@@ -17,6 +17,7 @@ enum Role {
 
 enum BookingType {
   TOUR
+  LOCATION
   TRANSFER
 }
 
@@ -29,6 +30,11 @@ enum BookingStatus {
 
 enum PaymentMethod {
   CASH
+}
+
+enum TourType {
+  TOUR
+  TRANSFER
 }
 
 model User {
@@ -50,14 +56,14 @@ model Tag {
 
   isMain Boolean @default(false)
 
-  transfers Transfer[]
+  locations Location[] @relation("TagToTransfer")
   tours     Tour[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
-model Transfer {
+model Location {
   id   String @id @default(uuid())
   slug String
 
@@ -76,7 +82,7 @@ model Transfer {
   mainImage String
   images    String[]
 
-  tags Tag[]
+  tags Tag[] @relation("TagToTransfer")
 
   minimumPrice Int
 
@@ -99,9 +105,11 @@ model Transfer {
   toLng         Float
 
   routePolyline String?
-  tours         TourTransfer[]
+  tours         TourLocation[]
 
   bookings Booking[]
+
+  @@map("Transfer")
 }
 
 model Tour {
@@ -122,6 +130,8 @@ model Tour {
   minimumPrice Int
   duration     String?
 
+  type        TourType @default(TOUR)
+
   isOvernight Boolean @default(false)
   starRating  Int?
   mealOptions Json?
@@ -134,27 +144,28 @@ model Tour {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  transfers TourTransfer[]
+  locations TourLocation[]
 
   bookings Booking[]
 }
 
-model TourTransfer {
+model TourLocation {
   id String @id @default(uuid())
 
   tourId     String
-  transferId String
+  locationId String   @map("transferId")
   order      Int
 
   tour     Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
-  transfer Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
-  @@unique([tourId, transferId])
+  @@unique([tourId, locationId])
   @@index([tourId])
   @@index([tourId, order])
-  @@index([transferId])
+  @@index([locationId])
+  @@map("TourTransfer")
 }
 
 model Booking {
@@ -185,8 +196,8 @@ model Booking {
   tourId String?
   tour   Tour?   @relation(fields: [tourId], references: [id])
 
-  transferId String?
-  transfer   Transfer? @relation(fields: [transferId], references: [id])
+  locationId String?   @map("transferId")
+  location   Location? @relation(fields: [locationId], references: [id])
 
   @@index([status, travelDate])
 }

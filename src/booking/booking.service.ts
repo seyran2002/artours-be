@@ -28,7 +28,7 @@ const BOOKING_INCLUDE = {
             duration: true,
         },
     },
-    transfer: {
+    location: {
         select: {
             id: true,
             slug: true,
@@ -63,7 +63,7 @@ export class BookingService {
     private async validateBookingTarget(
         type: BookingType,
         tourId?: string,
-        transferId?: string,
+        locationId?: string,
     ): Promise<void> {
         if (type === BookingType.TOUR) {
             if (!tourId) {
@@ -71,9 +71,9 @@ export class BookingService {
                     'tourId is required when type is TOUR',
                 );
             }
-            if (transferId) {
+            if (locationId) {
                 throw new BadRequestException(
-                    'transferId must be null when type is TOUR',
+                    'locationId must be null when type is TOUR',
                 );
             }
 
@@ -87,25 +87,25 @@ export class BookingService {
             return;
         }
 
-        // type === TRANSFER
-        if (!transferId) {
+        // type === LOCATION or TRANSFER — both require a locationId
+        if (!locationId) {
             throw new BadRequestException(
-                'transferId is required when type is TRANSFER',
+                `locationId is required when type is ${type}`,
             );
         }
         if (tourId) {
             throw new BadRequestException(
-                'tourId must be null when type is TRANSFER',
+                `tourId must be null when type is ${type}`,
             );
         }
 
-        const transfer = await this.prisma.transfer.findUnique({
-            where: { id: transferId },
+        const location = await this.prisma.location.findUnique({
+            where: { id: locationId },
             select: { id: true },
         });
-        if (!transfer) {
+        if (!location) {
             throw new NotFoundException(
-                `Transfer with id "${transferId}" not found`,
+                `Location with id "${locationId}" not found`,
             );
         }
     }
@@ -115,16 +115,19 @@ export class BookingService {
         const {
             type,
             tourId,
+            locationId,
             transferId,
             peopleCount,
             totalPrice,
             ...customerDetails
         } = dto;
 
+        const targetLocationId = locationId || transferId;
+
         await this.validateBookingTarget(
             type,
             tourId,
-            transferId,
+            targetLocationId,
         );
 
         const bookingNumber = await this.generateUniqueBookingNumber();
@@ -137,7 +140,7 @@ export class BookingService {
                 totalPrice: new Prisma.Decimal(totalPrice),
                 ...(type === BookingType.TOUR
                     ? { tourId: tourId! }
-                    : { transferId: transferId! }),
+                    : { locationId: targetLocationId! }),
                 ...customerDetails,
             },
             include: BOOKING_INCLUDE,

@@ -24,11 +24,11 @@ export class NotificationService {
      */
     private toContext(booking: any): NotificationContext {
         const ruTitle =
-            booking.tour?.ruTitle ?? booking.transfer?.ruTitle ?? 'Тур / Трансфер';
+            booking.tour?.ruTitle ?? booking.location?.ruTitle ?? 'Тур / Локация';
         const enTitle =
-            booking.tour?.enTitle ?? booking.transfer?.enTitle ?? 'Tour / Transfer';
+            booking.tour?.enTitle ?? booking.location?.enTitle ?? 'Tour / Location';
         const hyTitle =
-            booking.tour?.hyTitle ?? booking.transfer?.hyTitle ?? 'Տուր / Տրանսֆեր';
+            booking.tour?.hyTitle ?? booking.location?.hyTitle ?? 'Տուր / Լոկացիա';
 
         return {
             bookingNumber: booking.bookingNumber,

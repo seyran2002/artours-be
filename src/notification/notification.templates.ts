@@ -33,7 +33,7 @@ export function buildNewBookingTemplate(ctx: NotificationContext): string {
     const en = `🌍 <b>ArTours — Your request has been received!</b>
 
 📋 <b>Booking number:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Tour/Transfer:</b> ${ctx.enTitle}
+🗺 <b>Tour/Location:</b> ${ctx.enTitle}
 👤 <b>Name:</b> ${ctx.customerName}
 👥 <b>People:</b> ${ctx.peopleCount}
 📅 <b>Travel date:</b> ${fmtDate(ctx.travelDate)}
@@ -77,7 +77,7 @@ export function buildConfirmedTemplate(ctx: NotificationContext): string {
     const en = `✅ <b>ArTours — Booking Confirmed!</b>
 
 📋 <b>Booking number:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Tour/Transfer:</b> ${ctx.enTitle}
+🗺 <b>Tour/Location:</b> ${ctx.enTitle}
 👤 <b>Name:</b> ${ctx.customerName}
 👥 <b>People:</b> ${ctx.peopleCount}
 📅 <b>Travel date:</b> ${fmtDate(ctx.travelDate)}
@@ -116,7 +116,7 @@ export function buildCancelledTemplate(ctx: NotificationContext): string {
     const en = `❌ <b>ArTours — Booking Cancelled</b>
 
 📋 <b>Booking number:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Tour/Transfer:</b> ${ctx.enTitle}
+🗺 <b>Tour/Location:</b> ${ctx.enTitle}
 📅 <b>Travel date:</b> ${fmtDate(ctx.travelDate)}
 
 Your booking has been cancelled. If you have any questions, please contact us.
@@ -152,7 +152,7 @@ export function buildCompletedTemplate(ctx: NotificationContext): string {
     const en = `🏁 <b>ArTours — Trip Completed!</b>
 
 📋 <b>Booking number:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Tour/Transfer:</b> ${ctx.enTitle}
+🗺 <b>Tour/Location:</b> ${ctx.enTitle}
 
 We hope you enjoyed your trip! We would love to see you again. 🌿
 
@@ -190,7 +190,7 @@ export function buildReminderTemplate(ctx: NotificationContext): string {
 Tomorrow is the day! 🎒
 
 📋 <b>Booking number:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Tour/Transfer:</b> ${ctx.enTitle}
+🗺 <b>Tour/Location:</b> ${ctx.enTitle}
 👥 <b>People:</b> ${ctx.peopleCount}
 📅 <b>Travel date:</b> ${fmtDate(ctx.travelDate)}
 
@@ -328,7 +328,7 @@ export function buildCommentPrompt(lang: 'ru' | 'en' | 'hy'): string {
  */
 export function buildAdminReviewTemplate(data: {
     bookingNumber: string;
-    tourOrTransferTitle: string;
+    tourOrLocationTitle: string;
     rating: number;
     language: string;
     comment: string;
@@ -336,7 +336,7 @@ export function buildAdminReviewTemplate(data: {
     return `📝 <b>NEW CUSTOMER REVIEW</b>
 
 📋 <b>Booking:</b> <code>${escapeHtml(data.bookingNumber)}</code>
-🗺 <b>Tour/Transfer:</b> ${escapeHtml(data.tourOrTransferTitle)}
+🗺 <b>Tour/Location:</b> ${escapeHtml(data.tourOrLocationTitle)}
 ⭐ <b>Rating:</b> ${data.rating}/5
 🌐 <b>Language:</b> ${escapeHtml(data.language)}
 

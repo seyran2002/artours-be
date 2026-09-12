@@ -7,8 +7,10 @@ import {
     ArrayMinSize,
     Min,
     Max,
+    IsEnum,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { TourType } from '@prisma/client';
 
 export class CreateTourDto {
     @IsString()
@@ -74,11 +76,16 @@ export class CreateTourDto {
     @IsOptional()
     entranceFees?: any;
 
+    @IsOptional()
+    @IsEnum(TourType)
+    type?: TourType;
+
     @Transform(({ value }) =>
         typeof value === 'string' ? JSON.parse(value) : value
     )
+    @IsOptional()
     @IsArray()
-    @ArrayMinSize(1)
     @IsString({ each: true })
-    transferIds!: string[];
+    locationIds?: string[];
+
 }

@@ -1,11 +1,12 @@
-import { Tour, TourTransfer, Transfer } from '@prisma/client';
+import { Tour, TourLocation, Location } from '@prisma/client';
 
-/** TourTransfer row with its related Transfer populated. */
-export type TourTransferWithTransfer = TourTransfer & {
-    transfer: Transfer;
+/** TourLocation row with its related Location populated. */
+export type TourLocationWithLocation = TourLocation & {
+    location: Location;
 };
 
-/** Full Tour with ordered transfers included. */
-export type TourWithTransfers = Tour & {
-    transfers: TourTransferWithTransfer[];
+/** Full Tour with ordered locations included. */
+export type TourWithLocations = Tour & {
+    locations: TourLocationWithLocation[];
 };
+

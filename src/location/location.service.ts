@@ -1,20 +1,18 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateTransferDto } from './dto/create-transfer.dto';
-import { UpdateTransferDto } from './dto/update-transfer.dto';
+import { CreateLocationDto } from './dto/create-location.dto';
+import { UpdateLocationDto } from './dto/update-location.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
-export class TransferService {
+export class LocationService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cloudinaryService: CloudinaryService,
     ) { }
 
-
     async create(
-        dto: CreateTransferDto,
-
+        dto: CreateLocationDto,
         files?: { mainImage?: Express.Multer.File[]; images?: Express.Multer.File[] },
     ) {
         let mainImageUrl: string | undefined = dto.mainImage;
@@ -61,9 +59,9 @@ export class TransferService {
             .replace(/[^a-z0-9\s-]/g, '')
             .replace(/\s+/g, '-')
             .replace(/-+/g, '-');
-        const slug = `${slugFrom}-${slugTo}-transfer`;
+        const slug = `${slugFrom}-${slugTo}-location`;
 
-        return this.prisma.transfer.create({
+        return this.prisma.location.create({
             data: {
                 ...rest,
                 fromLat: Number(rest.fromLat),
@@ -90,7 +88,7 @@ export class TransferService {
     }
 
     async findAll() {
-        return this.prisma.transfer.findMany({
+        return this.prisma.location.findMany({
             include: {
                 tags: true,
             },
@@ -98,22 +96,22 @@ export class TransferService {
     }
 
     async findOne(id: string) {
-        const transfer = await this.prisma.transfer.findUnique({
+        const location = await this.prisma.location.findUnique({
             where: { id },
             include: {
                 tags: true,
             },
-        })
+        });
 
-        if (!transfer) {
-            throw new NotFoundException('Transfer not found')
+        if (!location) {
+            throw new NotFoundException('Location not found');
         }
 
-        return transfer
+        return location;
     }
 
     async findPopular() {
-        return this.prisma.transfer.findMany({
+        return this.prisma.location.findMany({
             where: {
                 tags: {
                     some: {
@@ -125,19 +123,19 @@ export class TransferService {
             include: {
                 tags: true,
             },
-        })
+        });
     }
 
     async update(
         id: string,
-        dto: UpdateTransferDto,
+        dto: UpdateLocationDto,
         files?: { mainImage?: Express.Multer.File[]; images?: Express.Multer.File[] },
     ) {
-        const existing = await this.prisma.transfer.findUnique({
+        const existing = await this.prisma.location.findUnique({
             where: { id },
         });
         if (!existing) {
-            throw new BadRequestException(`Transfer with ID ${id} not found`);
+            throw new BadRequestException(`Location with ID ${id} not found`);
         }
 
         let mainImageUrl = existing.mainImage;
@@ -207,20 +205,20 @@ export class TransferService {
             updateData.minimumPrice = rest.minimumPrice !== null ? Number(rest.minimumPrice) : null;
         }
 
-        return this.prisma.transfer.update({
+        return this.prisma.location.update({
             where: { id },
             data: updateData,
         });
     }
 
     async remove(id: string) {
-        return this.prisma.transfer.delete({
+        return this.prisma.location.delete({
             where: { id },
         });
     }
 
     async search(q: string, limit: number, skip: number) {
-        return await this.prisma.transfer.findMany({
+        return await this.prisma.location.findMany({
             where: {
                 OR: [
                     { enTitle: { contains: q, mode: 'insensitive' } },
@@ -242,7 +240,7 @@ export class TransferService {
     }
 
     async searchCount(q: string): Promise<number> {
-        return this.prisma.transfer.count({
+        return this.prisma.location.count({
             where: {
                 OR: [
                     { enTitle: { contains: q, mode: 'insensitive' } },
@@ -253,9 +251,8 @@ export class TransferService {
         });
     }
 
-    async getTransfersCount(): Promise<{ count: number }> {
-        const count = await this.prisma.transfer.count();
+    async getLocationsCount(): Promise<{ count: number }> {
+        const count = await this.prisma.location.count();
         return { count };
     }
 }
-

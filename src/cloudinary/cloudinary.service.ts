@@ -23,7 +23,7 @@ export class CloudinaryService {
 
     async uploadImage(
         file: Express.Multer.File,
-        folder = 'transfers',
+        folder = 'locations',
     ): Promise<CloudinaryUploadResult> {
         if (!file || !file.buffer) {
             throw new BadRequestException('No file provided or file buffer is empty')
@@ -51,7 +51,7 @@ export class CloudinaryService {
 
     async uploadMultiple(
         files: Express.Multer.File[],
-        folder = 'transfers',
+        folder = 'locations',
     ): Promise<CloudinaryUploadResult[]> {
         if (!files || files.length === 0) {
             throw new BadRequestException('No files provided')
@@ -64,7 +64,7 @@ export class CloudinaryService {
 
     async uploadMultipleAndGetUrls(
         files: Express.Multer.File[],
-        folder = 'transfers',
+        folder = 'locations',
     ): Promise<string[]> {
         const results = await this.uploadMultiple(files, folder)
         return results.map(r => r.secureUrl)

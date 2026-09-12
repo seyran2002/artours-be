@@ -24,8 +24,12 @@ export class CreateBookingDto {
     @IsUUID()
     tourId?: string;
 
-    @ValidateIf((o) => o.type === BookingType.TRANSFER)
-    @IsNotEmpty({ message: 'transferId is required when type is TRANSFER' })
+    @ValidateIf((o) => o.type === BookingType.LOCATION || o.type === BookingType.TRANSFER)
+    @IsNotEmpty({ message: 'locationId is required when type is LOCATION' })
+    @IsUUID()
+    locationId?: string;
+
+    @IsOptional()
     @IsUUID()
     transferId?: string;
 
