@@ -36,13 +36,13 @@ export class LocationService {
         const fromLat = dto.fromLat !== undefined && dto.fromLat !== null ? Number(dto.fromLat) : (fromPlaceObj?.location?.lat ?? locationObj?.lat ?? 0);
         const fromLng = dto.fromLng !== undefined && dto.fromLng !== null ? Number(dto.fromLng) : (fromPlaceObj?.location?.lng ?? locationObj?.lng ?? 0);
 
-        const fromAddressEn = dto.fromAddressEn ?? fromPlaceObj?.address?.en ?? addressObj?.en ?? (fromAddressText || null);
-        const fromAddressRu = dto.fromAddressRu ?? fromPlaceObj?.address?.ru ?? addressObj?.ru ?? null;
-        const fromAddressHy = dto.fromAddressHy ?? fromPlaceObj?.address?.hy ?? addressObj?.hy ?? null;
+        const enFromAddress = dto.enFromAddress ?? dto.fromAddressEn ?? fromPlaceObj?.address?.en ?? addressObj?.en ?? (fromAddressText || null);
+        const ruFromAddress = dto.ruFromAddress ?? dto.fromAddressRu ?? fromPlaceObj?.address?.ru ?? addressObj?.ru ?? null;
+        const hyFromAddress = dto.hyFromAddress ?? dto.fromAddressHy ?? fromPlaceObj?.address?.hy ?? addressObj?.hy ?? null;
 
-        const fromNameEn = dto.fromNameEn ?? fromPlaceObj?.name?.en ?? nameObj?.en ?? null;
-        const fromNameRu = dto.fromNameRu ?? fromPlaceObj?.name?.ru ?? nameObj?.ru ?? null;
-        const fromNameHy = dto.fromNameHy ?? fromPlaceObj?.name?.hy ?? nameObj?.hy ?? null;
+        const enFromName = dto.enFromName ?? dto.fromNameEn ?? fromPlaceObj?.name?.en ?? nameObj?.en ?? null;
+        const ruFromName = dto.ruFromName ?? dto.fromNameRu ?? fromPlaceObj?.name?.ru ?? nameObj?.ru ?? null;
+        const hyFromName = dto.hyFromName ?? dto.fromNameHy ?? fromPlaceObj?.name?.hy ?? nameObj?.hy ?? null;
 
         // TO fields
         const toPlaceId = dto.toPlaceId ?? toPlaceObj?.placeId ?? '';
@@ -50,52 +50,68 @@ export class LocationService {
         const toLat = dto.toLat !== undefined && dto.toLat !== null ? Number(dto.toLat) : (toPlaceObj?.location?.lat ?? 0);
         const toLng = dto.toLng !== undefined && dto.toLng !== null ? Number(dto.toLng) : (toPlaceObj?.location?.lng ?? 0);
 
-        const toAddressEn = dto.toAddressEn ?? toPlaceObj?.address?.en ?? null;
-        const toAddressRu = dto.toAddressRu ?? toPlaceObj?.address?.ru ?? null;
-        const toAddressHy = dto.toAddressHy ?? toPlaceObj?.address?.hy ?? null;
+        const enToAddress = dto.enToAddress ?? dto.toAddressEn ?? toPlaceObj?.address?.en ?? null;
+        const ruToAddress = dto.ruToAddress ?? dto.toAddressRu ?? toPlaceObj?.address?.ru ?? null;
+        const hyToAddress = dto.hyToAddress ?? dto.toAddressHy ?? toPlaceObj?.address?.hy ?? null;
 
-        const toNameEn = dto.toNameEn ?? toPlaceObj?.name?.en ?? null;
-        const toNameRu = dto.toNameRu ?? toPlaceObj?.name?.ru ?? null;
-        const toNameHy = dto.toNameHy ?? toPlaceObj?.name?.hy ?? null;
+        const enToName = dto.enToName ?? dto.toNameEn ?? toPlaceObj?.name?.en ?? null;
+        const ruToName = dto.ruToName ?? dto.toNameRu ?? toPlaceObj?.name?.ru ?? null;
+        const hyToName = dto.hyToName ?? dto.toNameHy ?? toPlaceObj?.name?.hy ?? null;
 
         return {
             fromPlaceId,
             fromAddressText,
             fromLat,
             fromLng,
-            fromAddressEn,
-            fromAddressRu,
-            fromAddressHy,
-            fromNameEn,
-            fromNameRu,
-            fromNameHy,
+            enFromAddress,
+            ruFromAddress,
+            hyFromAddress,
+            enFromName,
+            ruFromName,
+            hyFromName,
             toPlaceId,
             toAddressText,
             toLat,
             toLng,
-            toAddressEn,
-            toAddressRu,
-            toAddressHy,
-            toNameEn,
-            toNameRu,
-            toNameHy,
+            enToAddress,
+            ruToAddress,
+            hyToAddress,
+            enToName,
+            ruToName,
+            hyToName,
         };
     }
 
     private formatLocationResponse(location: any) {
         if (!location) return location;
 
+        const enFromAddress = location.enFromAddress ?? location.fromAddressEn ?? null;
+        const ruFromAddress = location.ruFromAddress ?? location.fromAddressRu ?? null;
+        const hyFromAddress = location.hyFromAddress ?? location.fromAddressHy ?? null;
+
+        const enFromName = location.enFromName ?? location.fromNameEn ?? null;
+        const ruFromName = location.ruFromName ?? location.fromNameRu ?? null;
+        const hyFromName = location.hyFromName ?? location.fromNameHy ?? null;
+
+        const enToAddress = location.enToAddress ?? location.toAddressEn ?? null;
+        const ruToAddress = location.ruToAddress ?? location.toAddressRu ?? null;
+        const hyToAddress = location.hyToAddress ?? location.toAddressHy ?? null;
+
+        const enToName = location.enToName ?? location.toNameEn ?? null;
+        const ruToName = location.ruToName ?? location.toNameRu ?? null;
+        const hyToName = location.hyToName ?? location.toNameHy ?? null;
+
         const fromPlace = {
             placeId: location.fromPlaceId || '',
             name: {
-                en: location.fromNameEn ?? null,
-                ru: location.fromNameRu ?? null,
-                hy: location.fromNameHy ?? null,
+                en: enFromName,
+                ru: ruFromName,
+                hy: hyFromName,
             },
             address: {
-                en: location.fromAddressEn ?? null,
-                ru: location.fromAddressRu ?? null,
-                hy: location.fromAddressHy ?? null,
+                en: enFromAddress,
+                ru: ruFromAddress,
+                hy: hyFromAddress,
             },
             location: {
                 lat: location.fromLat,
@@ -106,14 +122,14 @@ export class LocationService {
         const toPlace = {
             placeId: location.toPlaceId || '',
             name: {
-                en: location.toNameEn ?? null,
-                ru: location.toNameRu ?? null,
-                hy: location.toNameHy ?? null,
+                en: enToName,
+                ru: ruToName,
+                hy: hyToName,
             },
             address: {
-                en: location.toAddressEn ?? null,
-                ru: location.toAddressRu ?? null,
-                hy: location.toAddressHy ?? null,
+                en: enToAddress,
+                ru: ruToAddress,
+                hy: hyToAddress,
             },
             location: {
                 lat: location.toLat,
@@ -122,19 +138,31 @@ export class LocationService {
         };
 
         const name = {
-            en: location.fromNameEn ?? location.toNameEn ?? null,
-            ru: location.fromNameRu ?? location.toNameRu ?? null,
-            hy: location.fromNameHy ?? location.toNameHy ?? null,
+            en: enFromName ?? enToName ?? null,
+            ru: ruFromName ?? ruToName ?? null,
+            hy: hyFromName ?? hyToName ?? null,
         };
 
         const address = {
-            en: location.fromAddressEn ?? location.toAddressEn ?? null,
-            ru: location.fromAddressRu ?? location.toAddressRu ?? null,
-            hy: location.fromAddressHy ?? location.toAddressHy ?? null,
+            en: enFromAddress ?? enToAddress ?? null,
+            ru: ruFromAddress ?? ruToAddress ?? null,
+            hy: hyFromAddress ?? hyToAddress ?? null,
         };
 
         return {
             ...location,
+            enFromAddress,
+            ruFromAddress,
+            hyFromAddress,
+            enFromName,
+            ruFromName,
+            hyFromName,
+            enToAddress,
+            ruToAddress,
+            hyToAddress,
+            enToName,
+            ruToName,
+            hyToName,
             name,
             address,
             placeId: location.fromPlaceId || location.toPlaceId || '',
@@ -192,6 +220,18 @@ export class LocationService {
             location,
             fromPlace,
             toPlace,
+            enFromAddress,
+            ruFromAddress,
+            hyFromAddress,
+            enFromName,
+            ruFromName,
+            hyFromName,
+            enToAddress,
+            ruToAddress,
+            hyToAddress,
+            enToName,
+            ruToName,
+            hyToName,
             fromAddressEn,
             fromAddressRu,
             fromAddressHy,
@@ -232,23 +272,23 @@ export class LocationService {
                 fromAddressText: placeData.fromAddressText,
                 fromLat: placeData.fromLat,
                 fromLng: placeData.fromLng,
-                fromAddressEn: placeData.fromAddressEn,
-                fromAddressRu: placeData.fromAddressRu,
-                fromAddressHy: placeData.fromAddressHy,
-                fromNameEn: placeData.fromNameEn,
-                fromNameRu: placeData.fromNameRu,
-                fromNameHy: placeData.fromNameHy,
+                enFromAddress: placeData.enFromAddress,
+                ruFromAddress: placeData.ruFromAddress,
+                hyFromAddress: placeData.hyFromAddress,
+                enFromName: placeData.enFromName,
+                ruFromName: placeData.ruFromName,
+                hyFromName: placeData.hyFromName,
 
                 toPlaceId: placeData.toPlaceId,
                 toAddressText: placeData.toAddressText,
                 toLat: placeData.toLat,
                 toLng: placeData.toLng,
-                toAddressEn: placeData.toAddressEn,
-                toAddressRu: placeData.toAddressRu,
-                toAddressHy: placeData.toAddressHy,
-                toNameEn: placeData.toNameEn,
-                toNameRu: placeData.toNameRu,
-                toNameHy: placeData.toNameHy,
+                enToAddress: placeData.enToAddress,
+                ruToAddress: placeData.ruToAddress,
+                hyToAddress: placeData.hyToAddress,
+                enToName: placeData.enToName,
+                ruToName: placeData.ruToName,
+                hyToName: placeData.hyToName,
 
                 distanceFromYerevan,
                 minimumPrice,
@@ -369,6 +409,18 @@ export class LocationService {
             location,
             fromPlace,
             toPlace,
+            enFromAddress,
+            ruFromAddress,
+            hyFromAddress,
+            enFromName,
+            ruFromName,
+            hyFromName,
+            enToAddress,
+            ruToAddress,
+            hyToAddress,
+            enToName,
+            ruToName,
+            hyToName,
             fromAddressEn,
             fromAddressRu,
             fromAddressHy,
@@ -415,24 +467,24 @@ export class LocationService {
             updateData.fromLng = extracted.fromLng;
         }
 
-        if (dto.fromAddressEn !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.fromAddressEn = extracted.fromAddressEn;
-        if (dto.fromAddressRu !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.fromAddressRu = extracted.fromAddressRu;
-        if (dto.fromAddressHy !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.fromAddressHy = extracted.fromAddressHy;
-        if (dto.fromNameEn !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.fromNameEn = extracted.fromNameEn;
-        if (dto.fromNameRu !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.fromNameRu = extracted.fromNameRu;
-        if (dto.fromNameHy !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.fromNameHy = extracted.fromNameHy;
+        if (dto.enFromAddress !== undefined || dto.fromAddressEn !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.enFromAddress = extracted.enFromAddress;
+        if (dto.ruFromAddress !== undefined || dto.fromAddressRu !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.ruFromAddress = extracted.ruFromAddress;
+        if (dto.hyFromAddress !== undefined || dto.fromAddressHy !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.hyFromAddress = extracted.hyFromAddress;
+        if (dto.enFromName !== undefined || dto.fromNameEn !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.enFromName = extracted.enFromName;
+        if (dto.ruFromName !== undefined || dto.fromNameRu !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.ruFromName = extracted.ruFromName;
+        if (dto.hyFromName !== undefined || dto.fromNameHy !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.hyFromName = extracted.hyFromName;
 
         if (dto.toPlaceId !== undefined || dto.toPlace !== undefined) updateData.toPlaceId = extracted.toPlaceId;
         if (dto.toAddressText !== undefined || dto.toPlace !== undefined) updateData.toAddressText = extracted.toAddressText;
         if (dto.toLat !== undefined || dto.toPlace !== undefined) updateData.toLat = extracted.toLat;
         if (dto.toLng !== undefined || dto.toPlace !== undefined) updateData.toLng = extracted.toLng;
 
-        if (dto.toAddressEn !== undefined || dto.toPlace !== undefined) updateData.toAddressEn = extracted.toAddressEn;
-        if (dto.toAddressRu !== undefined || dto.toPlace !== undefined) updateData.toAddressRu = extracted.toAddressRu;
-        if (dto.toAddressHy !== undefined || dto.toPlace !== undefined) updateData.toAddressHy = extracted.toAddressHy;
-        if (dto.toNameEn !== undefined || dto.toPlace !== undefined) updateData.toNameEn = extracted.toNameEn;
-        if (dto.toNameRu !== undefined || dto.toPlace !== undefined) updateData.toNameRu = extracted.toNameRu;
-        if (dto.toNameHy !== undefined || dto.toPlace !== undefined) updateData.toNameHy = extracted.toNameHy;
+        if (dto.enToAddress !== undefined || dto.toAddressEn !== undefined || dto.toPlace !== undefined) updateData.enToAddress = extracted.enToAddress;
+        if (dto.ruToAddress !== undefined || dto.toAddressRu !== undefined || dto.toPlace !== undefined) updateData.ruToAddress = extracted.ruToAddress;
+        if (dto.hyToAddress !== undefined || dto.toAddressHy !== undefined || dto.toPlace !== undefined) updateData.hyToAddress = extracted.hyToAddress;
+        if (dto.enToName !== undefined || dto.toNameEn !== undefined || dto.toPlace !== undefined) updateData.enToName = extracted.enToName;
+        if (dto.ruToName !== undefined || dto.toNameRu !== undefined || dto.toPlace !== undefined) updateData.ruToName = extracted.ruToName;
+        if (dto.hyToName !== undefined || dto.toNameHy !== undefined || dto.toPlace !== undefined) updateData.hyToName = extracted.hyToName;
 
         if (rest.fromLat !== undefined) {
             updateData.fromLat = rest.fromLat !== null ? Number(rest.fromLat) : null;
@@ -489,18 +541,18 @@ export class LocationService {
                 ruTitle: true,
                 hyTitle: true,
                 mainImage: true,
-                fromAddressEn: true,
-                fromAddressRu: true,
-                fromAddressHy: true,
-                fromNameEn: true,
-                fromNameRu: true,
-                fromNameHy: true,
-                toAddressEn: true,
-                toAddressRu: true,
-                toAddressHy: true,
-                toNameEn: true,
-                toNameRu: true,
-                toNameHy: true,
+                enFromAddress: true,
+                ruFromAddress: true,
+                hyFromAddress: true,
+                enFromName: true,
+                ruFromName: true,
+                hyFromName: true,
+                enToAddress: true,
+                ruToAddress: true,
+                hyToAddress: true,
+                enToName: true,
+                ruToName: true,
+                hyToName: true,
                 fromPlaceId: true,
                 fromLat: true,
                 fromLng: true,
@@ -529,4 +581,5 @@ export class LocationService {
         return { count };
     }
 }
+
 

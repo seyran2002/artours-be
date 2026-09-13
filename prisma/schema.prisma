@@ -99,12 +99,12 @@ model Location {
   fromLng         Float
 
   // Multilingual FROM place data
-  fromAddressEn String?
-  fromAddressRu String?
-  fromAddressHy String?
-  fromNameEn    String?
-  fromNameRu    String?
-  fromNameHy    String?
+  enFromAddress String?
+  ruFromAddress String?
+  hyFromAddress String?
+  enFromName    String?
+  ruFromName    String?
+  hyFromName    String?
 
   // TO
   toPlaceId     String
@@ -113,12 +113,12 @@ model Location {
   toLng         Float
 
   // Multilingual TO place data
-  toAddressEn   String?
-  toAddressRu   String?
-  toAddressHy   String?
-  toNameEn      String?
-  toNameRu      String?
-  toNameHy      String?
+  enToAddress   String?
+  ruToAddress   String?
+  hyToAddress   String?
+  enToName      String?
+  ruToName      String?
+  hyToName      String?
 
   routePolyline String?
   tours         TourLocation[]

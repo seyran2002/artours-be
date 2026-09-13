@@ -95,6 +95,31 @@ export class CreateLocationDto {
     // Multilingual flat fields for FROM
     @IsString()
     @IsOptional()
+    enFromAddress?: string;
+
+    @IsString()
+    @IsOptional()
+    ruFromAddress?: string;
+
+    @IsString()
+    @IsOptional()
+    hyFromAddress?: string;
+
+    @IsString()
+    @IsOptional()
+    enFromName?: string;
+
+    @IsString()
+    @IsOptional()
+    ruFromName?: string;
+
+    @IsString()
+    @IsOptional()
+    hyFromName?: string;
+
+    // Aliases for backwards compatibility
+    @IsString()
+    @IsOptional()
     fromAddressEn?: string;
 
     @IsString()
@@ -118,6 +143,31 @@ export class CreateLocationDto {
     fromNameHy?: string;
 
     // Multilingual flat fields for TO
+    @IsString()
+    @IsOptional()
+    enToAddress?: string;
+
+    @IsString()
+    @IsOptional()
+    ruToAddress?: string;
+
+    @IsString()
+    @IsOptional()
+    hyToAddress?: string;
+
+    @IsString()
+    @IsOptional()
+    enToName?: string;
+
+    @IsString()
+    @IsOptional()
+    ruToName?: string;
+
+    @IsString()
+    @IsOptional()
+    hyToName?: string;
+
+    // Aliases for backwards compatibility
     @IsString()
     @IsOptional()
     toAddressEn?: string;
