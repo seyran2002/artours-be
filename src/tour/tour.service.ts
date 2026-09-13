@@ -8,7 +8,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, TourType } from '@prisma/client';
 import { TourWithLocations } from 'src/types/tour.type';
 
 type UploadFiles = {
@@ -223,6 +223,36 @@ export class TourService {
             console.error('Error in TourService.findAll:', error);
             throw new InternalServerErrorException(
                 error?.message || 'Failed to fetch tours',
+            );
+        }
+    }
+
+    async findByType(type: TourType): Promise<TourWithLocations[]> {
+        if (!Object.values(TourType).includes(type)) {
+            throw new BadRequestException(
+                `Invalid tour type "${type}". Supported types are: ${Object.values(TourType).join(', ')}`,
+            );
+        }
+
+        try {
+            const tours = await this.prisma.tour.findMany({
+                where: { type },
+                include: {
+                    locations: {
+                        orderBy: { order: 'asc' },
+                        include: { location: true },
+                    },
+                    tags: true,
+                },
+            });
+            return tours as TourWithLocations[];
+        } catch (error: any) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+            console.error('Error in TourService.findByType:', error);
+            throw new InternalServerErrorException(
+                error?.message || 'Failed to fetch tours by type',
             );
         }
     }

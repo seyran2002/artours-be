@@ -6,15 +6,18 @@ import {
     Delete,
     Param,
     Body,
+    Query,
     UseGuards,
     UseInterceptors,
     UploadedFiles,
+    BadRequestException,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { TourService } from './tour.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
+import { TourType } from '@prisma/client';
 
 @Controller('tours')
 export class TourController {
@@ -42,8 +45,29 @@ export class TourController {
 
     // GET ALL
     @Get()
-    findAll() {
+    findAll(@Query('type') type?: string) {
+        if (type) {
+            const upperType = type.toUpperCase() as TourType;
+            if (!Object.values(TourType).includes(upperType)) {
+                throw new BadRequestException(
+                    `Invalid tour type "${type}". Supported types are: ${Object.values(TourType).join(', ')}`,
+                );
+            }
+            return this.tourService.findByType(upperType);
+        }
         return this.tourService.findAll();
+    }
+
+    // GET BY TYPE
+    @Get('type/:type')
+    findByType(@Param('type') type: string) {
+        const upperType = type?.toUpperCase() as TourType;
+        if (!Object.values(TourType).includes(upperType)) {
+            throw new BadRequestException(
+                `Invalid tour type "${type}". Supported types are: ${Object.values(TourType).join(', ')}`,
+            );
+        }
+        return this.tourService.findByType(upperType);
     }
 
     // GET POPULAR TOURS
