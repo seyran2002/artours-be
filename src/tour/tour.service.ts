@@ -2,6 +2,7 @@ import {
     Injectable,
     BadRequestException,
     NotFoundException,
+    InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
@@ -207,71 +208,104 @@ export class TourService {
     }
 
     async findAll(): Promise<TourWithLocations[]> {
-        const tours = await this.prisma.tour.findMany({
-            include: {
-                locations: {
-                    orderBy: { order: 'asc' },
-                    include: { location: true },
+        try {
+            const tours = await this.prisma.tour.findMany({
+                include: {
+                    locations: {
+                        orderBy: { order: 'asc' },
+                        include: { location: true },
+                    },
+                    tags: true,
                 },
-                tags: true,
-            },
-        });
-        return tours as TourWithLocations[];
+            });
+            return tours as TourWithLocations[];
+        } catch (error: any) {
+            console.error('Error in TourService.findAll:', error);
+            throw new InternalServerErrorException(
+                error?.message || 'Failed to fetch tours',
+            );
+        }
     }
 
     async findOne(id: string): Promise<TourWithLocations> {
-        const tour = await this.prisma.tour.findUnique({
-            where: { id },
-            include: {
-                locations: {
-                    orderBy: { order: 'asc' },
-                    include: { location: true },
+        try {
+            const tour = await this.prisma.tour.findUnique({
+                where: { id },
+                include: {
+                    locations: {
+                        orderBy: { order: 'asc' },
+                        include: { location: true },
+                    },
+                    tags: true,
                 },
-            },
-        });
+            });
 
-        if (!tour) {
-            throw new NotFoundException(`Tour with id "${id}" not found`);
+            if (!tour) {
+                throw new NotFoundException(`Tour with id "${id}" not found`);
+            }
+
+            return tour as TourWithLocations;
+        } catch (error: any) {
+            if (error instanceof NotFoundException) throw error;
+            console.error(`Error in TourService.findOne(${id}):`, error);
+            throw new InternalServerErrorException(
+                error?.message || 'Failed to fetch tour',
+            );
         }
-
-        return tour as TourWithLocations;
     }
 
     async findBySlug(slug: string): Promise<TourWithLocations> {
-        const tour = await this.prisma.tour.findFirst({
-            where: { slug },
-            include: {
-                locations: {
-                    orderBy: { order: 'asc' },
-                    include: { location: true },
+        try {
+            const tour = await this.prisma.tour.findFirst({
+                where: { slug },
+                include: {
+                    locations: {
+                        orderBy: { order: 'asc' },
+                        include: { location: true },
+                    },
+                    tags: true,
                 },
-            },
-        });
+            });
 
-        if (!tour) {
-            throw new NotFoundException(`Tour with slug "${slug}" not found`);
+            if (!tour) {
+                throw new NotFoundException(`Tour with slug "${slug}" not found`);
+            }
+
+            return tour as TourWithLocations;
+        } catch (error: any) {
+            if (error instanceof NotFoundException) throw error;
+            console.error(`Error in TourService.findBySlug(${slug}):`, error);
+            throw new InternalServerErrorException(
+                error?.message || 'Failed to fetch tour',
+            );
         }
-
-        return tour as TourWithLocations;
     }
 
     async findPopular(): Promise<TourWithLocations[]> {
-        return await this.prisma.tour.findMany({
-            where: {
-                tags: {
-                    some: {
-                        enName: 'Popular',
+        try {
+            return await this.prisma.tour.findMany({
+                where: {
+                    tags: {
+                        some: {
+                            enName: 'Popular',
+                        },
                     },
                 },
-            },
-            take: 4,
-            include: {
-                tags: true,
-                locations: {
-                    include: { location: true },
+                take: 4,
+                include: {
+                    tags: true,
+                    locations: {
+                        orderBy: { order: 'asc' },
+                        include: { location: true },
+                    },
                 },
-            },
-        }) as TourWithLocations[];
+            }) as TourWithLocations[];
+        } catch (error: any) {
+            console.error('Error in TourService.findPopular:', error);
+            throw new InternalServerErrorException(
+                error?.message || 'Failed to fetch popular tours',
+            );
+        }
     }
 
     async update(
