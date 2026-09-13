@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsNumber, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 interface EntranceFees {
@@ -8,42 +8,158 @@ interface EntranceFees {
     fee: number;
 }
 
+export class MultilingualTextDto {
+    @IsOptional()
+    @IsString()
+    en?: string | null;
+
+    @IsOptional()
+    @IsString()
+    ru?: string | null;
+
+    @IsOptional()
+    @IsString()
+    hy?: string | null;
+}
+
+export class LocationCoordinatesDto {
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    lat?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @Type(() => Number)
+    lng?: number;
+}
+
+export class PlaceDataDto {
+    @IsOptional()
+    @IsString()
+    placeId?: string;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => MultilingualTextDto)
+    name?: MultilingualTextDto;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => MultilingualTextDto)
+    address?: MultilingualTextDto;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => LocationCoordinatesDto)
+    location?: LocationCoordinatesDto;
+}
+
 export class CreateLocationDto {
     @IsString()
-    @IsNotEmpty()
-    fromPlaceId!: string;
+    @IsOptional()
+    fromPlaceId?: string;
 
     @IsString()
-    @IsNotEmpty()
-    fromAddressText!: string;
+    @IsOptional()
+    fromAddressText?: string;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Type(() => Number)
-    fromLat!: number;
+    fromLat?: number;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Type(() => Number)
-    fromLng!: number;
+    fromLng?: number;
 
     @IsString()
-    @IsNotEmpty()
-    toPlaceId!: string;
+    @IsOptional()
+    toPlaceId?: string;
 
     @IsString()
-    @IsNotEmpty()
-    toAddressText!: string;
+    @IsOptional()
+    toAddressText?: string;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Type(() => Number)
-    toLat!: number;
+    toLat?: number;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     @Type(() => Number)
-    toLng!: number;
+    toLng?: number;
+
+    // Multilingual flat fields for FROM
+    @IsString()
+    @IsOptional()
+    fromAddressEn?: string;
+
+    @IsString()
+    @IsOptional()
+    fromAddressRu?: string;
+
+    @IsString()
+    @IsOptional()
+    fromAddressHy?: string;
+
+    @IsString()
+    @IsOptional()
+    fromNameEn?: string;
+
+    @IsString()
+    @IsOptional()
+    fromNameRu?: string;
+
+    @IsString()
+    @IsOptional()
+    fromNameHy?: string;
+
+    // Multilingual flat fields for TO
+    @IsString()
+    @IsOptional()
+    toAddressEn?: string;
+
+    @IsString()
+    @IsOptional()
+    toAddressRu?: string;
+
+    @IsString()
+    @IsOptional()
+    toAddressHy?: string;
+
+    @IsString()
+    @IsOptional()
+    toNameEn?: string;
+
+    @IsString()
+    @IsOptional()
+    toNameRu?: string;
+
+    @IsString()
+    @IsOptional()
+    toNameHy?: string;
+
+    // Structured Place Payload support
+    @IsOptional()
+    placeId?: string;
+
+    @IsOptional()
+    name?: MultilingualTextDto | string;
+
+    @IsOptional()
+    address?: MultilingualTextDto | string;
+
+    @IsOptional()
+    location?: LocationCoordinatesDto | string;
+
+    @IsOptional()
+    fromPlace?: PlaceDataDto | string;
+
+    @IsOptional()
+    toPlace?: PlaceDataDto | string;
 
     @IsString()
     @IsOptional()
@@ -117,3 +233,4 @@ export class CreateLocationDto {
     @IsOptional()
     routePolyline?: string;
 }
+
