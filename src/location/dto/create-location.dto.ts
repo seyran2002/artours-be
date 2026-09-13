@@ -117,31 +117,6 @@ export class CreateLocationDto {
     @IsOptional()
     hyFromName?: string;
 
-    // Aliases for backwards compatibility
-    @IsString()
-    @IsOptional()
-    fromAddressEn?: string;
-
-    @IsString()
-    @IsOptional()
-    fromAddressRu?: string;
-
-    @IsString()
-    @IsOptional()
-    fromAddressHy?: string;
-
-    @IsString()
-    @IsOptional()
-    fromNameEn?: string;
-
-    @IsString()
-    @IsOptional()
-    fromNameRu?: string;
-
-    @IsString()
-    @IsOptional()
-    fromNameHy?: string;
-
     // Multilingual flat fields for TO
     @IsString()
     @IsOptional()
@@ -166,31 +141,6 @@ export class CreateLocationDto {
     @IsString()
     @IsOptional()
     hyToName?: string;
-
-    // Aliases for backwards compatibility
-    @IsString()
-    @IsOptional()
-    toAddressEn?: string;
-
-    @IsString()
-    @IsOptional()
-    toAddressRu?: string;
-
-    @IsString()
-    @IsOptional()
-    toAddressHy?: string;
-
-    @IsString()
-    @IsOptional()
-    toNameEn?: string;
-
-    @IsString()
-    @IsOptional()
-    toNameRu?: string;
-
-    @IsString()
-    @IsOptional()
-    toNameHy?: string;
 
     // Structured Place Payload support
     @IsOptional()

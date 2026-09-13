@@ -36,13 +36,13 @@ export class LocationService {
         const fromLat = dto.fromLat !== undefined && dto.fromLat !== null ? Number(dto.fromLat) : (fromPlaceObj?.location?.lat ?? locationObj?.lat ?? 0);
         const fromLng = dto.fromLng !== undefined && dto.fromLng !== null ? Number(dto.fromLng) : (fromPlaceObj?.location?.lng ?? locationObj?.lng ?? 0);
 
-        const enFromAddress = dto.enFromAddress ?? dto.fromAddressEn ?? fromPlaceObj?.address?.en ?? addressObj?.en ?? (fromAddressText || null);
-        const ruFromAddress = dto.ruFromAddress ?? dto.fromAddressRu ?? fromPlaceObj?.address?.ru ?? addressObj?.ru ?? null;
-        const hyFromAddress = dto.hyFromAddress ?? dto.fromAddressHy ?? fromPlaceObj?.address?.hy ?? addressObj?.hy ?? null;
+        const enFromAddress = dto.enFromAddress ?? fromPlaceObj?.address?.en ?? addressObj?.en ?? (fromAddressText || null);
+        const ruFromAddress = dto.ruFromAddress ?? fromPlaceObj?.address?.ru ?? addressObj?.ru ?? null;
+        const hyFromAddress = dto.hyFromAddress ?? fromPlaceObj?.address?.hy ?? addressObj?.hy ?? null;
 
-        const enFromName = dto.enFromName ?? dto.fromNameEn ?? fromPlaceObj?.name?.en ?? nameObj?.en ?? null;
-        const ruFromName = dto.ruFromName ?? dto.fromNameRu ?? fromPlaceObj?.name?.ru ?? nameObj?.ru ?? null;
-        const hyFromName = dto.hyFromName ?? dto.fromNameHy ?? fromPlaceObj?.name?.hy ?? nameObj?.hy ?? null;
+        const enFromName = dto.enFromName ?? fromPlaceObj?.name?.en ?? nameObj?.en ?? null;
+        const ruFromName = dto.ruFromName ?? fromPlaceObj?.name?.ru ?? nameObj?.ru ?? null;
+        const hyFromName = dto.hyFromName ?? fromPlaceObj?.name?.hy ?? nameObj?.hy ?? null;
 
         // TO fields
         const toPlaceId = dto.toPlaceId ?? toPlaceObj?.placeId ?? '';
@@ -50,13 +50,13 @@ export class LocationService {
         const toLat = dto.toLat !== undefined && dto.toLat !== null ? Number(dto.toLat) : (toPlaceObj?.location?.lat ?? 0);
         const toLng = dto.toLng !== undefined && dto.toLng !== null ? Number(dto.toLng) : (toPlaceObj?.location?.lng ?? 0);
 
-        const enToAddress = dto.enToAddress ?? dto.toAddressEn ?? toPlaceObj?.address?.en ?? null;
-        const ruToAddress = dto.ruToAddress ?? dto.toAddressRu ?? toPlaceObj?.address?.ru ?? null;
-        const hyToAddress = dto.hyToAddress ?? dto.toAddressHy ?? toPlaceObj?.address?.hy ?? null;
+        const enToAddress = dto.enToAddress ?? toPlaceObj?.address?.en ?? null;
+        const ruToAddress = dto.ruToAddress ?? toPlaceObj?.address?.ru ?? null;
+        const hyToAddress = dto.hyToAddress ?? toPlaceObj?.address?.hy ?? null;
 
-        const enToName = dto.enToName ?? dto.toNameEn ?? toPlaceObj?.name?.en ?? null;
-        const ruToName = dto.ruToName ?? dto.toNameRu ?? toPlaceObj?.name?.ru ?? null;
-        const hyToName = dto.hyToName ?? dto.toNameHy ?? toPlaceObj?.name?.hy ?? null;
+        const enToName = dto.enToName ?? toPlaceObj?.name?.en ?? null;
+        const ruToName = dto.ruToName ?? toPlaceObj?.name?.ru ?? null;
+        const hyToName = dto.hyToName ?? toPlaceObj?.name?.hy ?? null;
 
         return {
             fromPlaceId,
@@ -85,21 +85,21 @@ export class LocationService {
     private formatLocationResponse(location: any) {
         if (!location) return location;
 
-        const enFromAddress = location.enFromAddress ?? location.fromAddressEn ?? null;
-        const ruFromAddress = location.ruFromAddress ?? location.fromAddressRu ?? null;
-        const hyFromAddress = location.hyFromAddress ?? location.fromAddressHy ?? null;
+        const enFromAddress = location.enFromAddress ?? null;
+        const ruFromAddress = location.ruFromAddress ?? null;
+        const hyFromAddress = location.hyFromAddress ?? null;
 
-        const enFromName = location.enFromName ?? location.fromNameEn ?? null;
-        const ruFromName = location.ruFromName ?? location.fromNameRu ?? null;
-        const hyFromName = location.hyFromName ?? location.fromNameHy ?? null;
+        const enFromName = location.enFromName ?? null;
+        const ruFromName = location.ruFromName ?? null;
+        const hyFromName = location.hyFromName ?? null;
 
-        const enToAddress = location.enToAddress ?? location.toAddressEn ?? null;
-        const ruToAddress = location.ruToAddress ?? location.toAddressRu ?? null;
-        const hyToAddress = location.hyToAddress ?? location.toAddressHy ?? null;
+        const enToAddress = location.enToAddress ?? null;
+        const ruToAddress = location.ruToAddress ?? null;
+        const hyToAddress = location.hyToAddress ?? null;
 
-        const enToName = location.enToName ?? location.toNameEn ?? null;
-        const ruToName = location.ruToName ?? location.toNameRu ?? null;
-        const hyToName = location.hyToName ?? location.toNameHy ?? null;
+        const enToName = location.enToName ?? null;
+        const ruToName = location.ruToName ?? null;
+        const hyToName = location.hyToName ?? null;
 
         const fromPlace = {
             placeId: location.fromPlaceId || '',
@@ -232,18 +232,6 @@ export class LocationService {
             enToName,
             ruToName,
             hyToName,
-            fromAddressEn,
-            fromAddressRu,
-            fromAddressHy,
-            fromNameEn,
-            fromNameRu,
-            fromNameHy,
-            toAddressEn,
-            toAddressRu,
-            toAddressHy,
-            toNameEn,
-            toNameRu,
-            toNameHy,
             ...rest
         } = dto;
 
@@ -421,18 +409,6 @@ export class LocationService {
             enToName,
             ruToName,
             hyToName,
-            fromAddressEn,
-            fromAddressRu,
-            fromAddressHy,
-            fromNameEn,
-            fromNameRu,
-            fromNameHy,
-            toAddressEn,
-            toAddressRu,
-            toAddressHy,
-            toNameEn,
-            toNameRu,
-            toNameHy,
             ...rest
         } = dto;
 
@@ -467,24 +443,24 @@ export class LocationService {
             updateData.fromLng = extracted.fromLng;
         }
 
-        if (dto.enFromAddress !== undefined || dto.fromAddressEn !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.enFromAddress = extracted.enFromAddress;
-        if (dto.ruFromAddress !== undefined || dto.fromAddressRu !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.ruFromAddress = extracted.ruFromAddress;
-        if (dto.hyFromAddress !== undefined || dto.fromAddressHy !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.hyFromAddress = extracted.hyFromAddress;
-        if (dto.enFromName !== undefined || dto.fromNameEn !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.enFromName = extracted.enFromName;
-        if (dto.ruFromName !== undefined || dto.fromNameRu !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.ruFromName = extracted.ruFromName;
-        if (dto.hyFromName !== undefined || dto.fromNameHy !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.hyFromName = extracted.hyFromName;
+        if (dto.enFromAddress !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.enFromAddress = extracted.enFromAddress;
+        if (dto.ruFromAddress !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.ruFromAddress = extracted.ruFromAddress;
+        if (dto.hyFromAddress !== undefined || dto.fromPlace !== undefined || dto.address !== undefined) updateData.hyFromAddress = extracted.hyFromAddress;
+        if (dto.enFromName !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.enFromName = extracted.enFromName;
+        if (dto.ruFromName !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.ruFromName = extracted.ruFromName;
+        if (dto.hyFromName !== undefined || dto.fromPlace !== undefined || dto.name !== undefined) updateData.hyFromName = extracted.hyFromName;
 
         if (dto.toPlaceId !== undefined || dto.toPlace !== undefined) updateData.toPlaceId = extracted.toPlaceId;
         if (dto.toAddressText !== undefined || dto.toPlace !== undefined) updateData.toAddressText = extracted.toAddressText;
         if (dto.toLat !== undefined || dto.toPlace !== undefined) updateData.toLat = extracted.toLat;
         if (dto.toLng !== undefined || dto.toPlace !== undefined) updateData.toLng = extracted.toLng;
 
-        if (dto.enToAddress !== undefined || dto.toAddressEn !== undefined || dto.toPlace !== undefined) updateData.enToAddress = extracted.enToAddress;
-        if (dto.ruToAddress !== undefined || dto.toAddressRu !== undefined || dto.toPlace !== undefined) updateData.ruToAddress = extracted.ruToAddress;
-        if (dto.hyToAddress !== undefined || dto.toAddressHy !== undefined || dto.toPlace !== undefined) updateData.hyToAddress = extracted.hyToAddress;
-        if (dto.enToName !== undefined || dto.toNameEn !== undefined || dto.toPlace !== undefined) updateData.enToName = extracted.enToName;
-        if (dto.ruToName !== undefined || dto.toNameRu !== undefined || dto.toPlace !== undefined) updateData.ruToName = extracted.ruToName;
-        if (dto.hyToName !== undefined || dto.toNameHy !== undefined || dto.toPlace !== undefined) updateData.hyToName = extracted.hyToName;
+        if (dto.enToAddress !== undefined || dto.toPlace !== undefined) updateData.enToAddress = extracted.enToAddress;
+        if (dto.ruToAddress !== undefined || dto.toPlace !== undefined) updateData.ruToAddress = extracted.ruToAddress;
+        if (dto.hyToAddress !== undefined || dto.toPlace !== undefined) updateData.hyToAddress = extracted.hyToAddress;
+        if (dto.enToName !== undefined || dto.toPlace !== undefined) updateData.enToName = extracted.enToName;
+        if (dto.ruToName !== undefined || dto.toPlace !== undefined) updateData.ruToName = extracted.ruToName;
+        if (dto.hyToName !== undefined || dto.toPlace !== undefined) updateData.hyToName = extracted.hyToName;
 
         if (rest.fromLat !== undefined) {
             updateData.fromLat = rest.fromLat !== null ? Number(rest.fromLat) : null;
