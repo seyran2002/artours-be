@@ -10,6 +10,7 @@ import { CreateTourDto } from './dto/create-tour.dto';
 import { UpdateTourDto } from './dto/update-tour.dto';
 import { Prisma, TourType } from '@prisma/client';
 import { TourWithLocations } from 'src/types/tour.type';
+import { type } from 'os';
 
 type UploadFiles = {
     mainImage?: Express.Multer.File[];
@@ -320,6 +321,7 @@ export class TourService {
                             enName: 'Popular',
                         },
                     },
+                    type: TourType.TOUR,
                 },
                 take: 4,
                 include: {
