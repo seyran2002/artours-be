@@ -13,6 +13,7 @@ import { BookingModule } from './booking/booking.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { NotificationModule } from './notification/notification.module';
 import { ContactModule } from './contact/contact.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ContactModule } from './contact/contact.module';
     TelegramModule,
     NotificationModule,
     ContactModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
