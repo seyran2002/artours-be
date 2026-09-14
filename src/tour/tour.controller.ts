@@ -29,7 +29,7 @@ export class TourController {
     @UseInterceptors(
         FileFieldsInterceptor([
             { name: 'mainImage', maxCount: 1 },
-            { name: 'images', maxCount: 20 },
+            { name: 'images', maxCount: 50 },
         ]),
     )
     create(
@@ -94,7 +94,7 @@ export class TourController {
     @UseInterceptors(
         FileFieldsInterceptor([
             { name: 'mainImage', maxCount: 1 },
-            { name: 'images', maxCount: 20 },
+            { name: 'images', maxCount: 50 },
         ]),
     )
     update(

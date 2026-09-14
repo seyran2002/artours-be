@@ -9,6 +9,8 @@ import {
     UseGuards,
     UseInterceptors,
     UploadedFiles,
+    HttpCode,
+    HttpStatus,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
@@ -26,7 +28,7 @@ export class LocationController {
     @UseInterceptors(
         FileFieldsInterceptor([
             { name: 'mainImage', maxCount: 1 },
-            { name: 'images', maxCount: 20 },
+            { name: 'images', maxCount: 50 },
         ]),
     )
     create(
@@ -70,7 +72,7 @@ export class LocationController {
     @UseInterceptors(
         FileFieldsInterceptor([
             { name: 'mainImage', maxCount: 1 },
-            { name: 'images', maxCount: 20 },
+            { name: 'images', maxCount: 50 },
         ]),
     )
     update(
@@ -88,6 +90,7 @@ export class LocationController {
     // DELETE
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
+    @HttpCode(HttpStatus.OK)
     remove(@Param('id') id: string) {
         return this.locationService.remove(id);
     }
