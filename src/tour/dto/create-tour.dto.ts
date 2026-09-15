@@ -76,16 +76,14 @@ export class CreateTourDto {
     routePolyline?: string;
 
     @IsOptional()
+    @Transform(({ value }) => typeof value === 'string' ? JSON.parse(value) : value)
     entranceFees?: any;
 
     @IsOptional()
     @Transform(({ value }) =>
         typeof value === 'string' ? JSON.parse(value) : value
     )
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => FeatureDto)
-    features?: FeatureDto[];
+    features?: any;
 
     @IsOptional()
     @IsEnum(TourType)

@@ -456,8 +456,8 @@ export class LocationService {
             ...rest,
             mainImage: mainImageUrl,
             images: finalImages,
-                ...(entranceFees?.length ? { entranceFees } : {}),
-                ...(features !== undefined ? { features } : {}),
+            ...(entranceFees?.length ? { entranceFees } : {}),
+            ...(features !== undefined ? { features } : {}),
             ...(parsedTagIds?.length && {
                 tags: {
                     set: parsedTagIds.map(id => ({ id })),

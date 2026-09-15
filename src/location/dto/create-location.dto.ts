@@ -228,14 +228,12 @@ export class CreateLocationDto {
     tagIds?: string | string[];
 
     @IsOptional()
-    entranceFees?: EntranceFees[];
+    @Transform(({ value }) => typeof value === 'string' ? JSON.parse(value) : value)
+    entranceFees?: any;
 
     @IsOptional()
     @Transform(({ value }) => typeof value === 'string' ? JSON.parse(value) : value)
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => FeatureDto)
-    features?: FeatureDto[];
+    features?: any;
 
     @IsString()
     @IsOptional()
