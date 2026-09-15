@@ -191,7 +191,7 @@ export class TourService {
                     isOvernight,
                     starRating,
                     mealOptions,
-                    ...(entranceFees ? { entranceFees } : {}),
+                    ...(entranceFees  !== undefined ? { entranceFees } : {}),
                     ...(features !== undefined ? { features } : {}),
 
                     ...(parsedTagIds?.length && {

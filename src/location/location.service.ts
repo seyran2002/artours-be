@@ -288,7 +288,7 @@ export class LocationService {
                 mainImage: mainImageUrl,
                 images: finalImages,
                 slug,
-                ...(entranceFees?.length ? { entranceFees } : {}),
+                ...(entranceFees !== undefined ? { entranceFees } : {}),
                 ...(features !== undefined ? { features } : {}),
 
                 ...(parsedTagIds?.length && {
@@ -446,7 +446,7 @@ export class LocationService {
             ...rest,
             mainImage: mainImageUrl,
             images: finalImages,
-            ...(entranceFees?.length ? { entranceFees } : {}),
+            ...(entranceFees !== undefined ? { entranceFees } : {}),
             ...(features !== undefined ? { features } : {}),
             ...(parsedTagIds?.length && {
                 tags: {
