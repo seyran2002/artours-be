@@ -21,15 +21,6 @@ type UploadFiles = {
 export function formatTourResponse(tour: any) {
     if (!tour) return tour;
 
-    let features = tour.features ?? null;
-    if (typeof features === 'string') {
-        try {
-            features = JSON.parse(features);
-        } catch {
-            // keep as is
-        }
-    }
-
     const locations = tour.locations?.map((tl: any) => ({
         ...tl,
         location: tl.location ? formatLocationResponse(tl.location) : tl.location,
@@ -37,7 +28,6 @@ export function formatTourResponse(tour: any) {
 
     return {
         ...tour,
-        features,
         ...(locations ? { locations } : {}),
     };
 }
@@ -551,7 +541,6 @@ export class TourService {
                 ruTitle: true,
                 hyTitle: true,
                 mainImage: true,
-                features: true,
                 type: true,
             },
         });

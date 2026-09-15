@@ -7,15 +7,6 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 export function formatLocationResponse(location: any) {
     if (!location) return location;
 
-    let features = location.features ?? null;
-    if (typeof features === 'string') {
-        try {
-            features = JSON.parse(features);
-        } catch {
-            // keep as is
-        }
-    }
-
     const enFromAddress = location.enFromAddress ?? null;
     const ruFromAddress = location.ruFromAddress ?? null;
     const hyFromAddress = location.hyFromAddress ?? null;
@@ -82,7 +73,6 @@ export function formatLocationResponse(location: any) {
 
     return {
         ...location,
-        features,
         enFromAddress,
         ruFromAddress,
         hyFromAddress,
@@ -554,7 +544,6 @@ export class LocationService {
                 ruTitle: true,
                 hyTitle: true,
                 mainImage: true,
-                features: true,
                 enFromAddress: true,
                 ruFromAddress: true,
                 hyFromAddress: true,
