@@ -60,6 +60,12 @@ export class LocationController {
         return this.locationService.findPopular();
     }
 
+    // GET BY SLUG
+    @Get('slug/:slug')
+    findBySlug(@Param('slug') slug: string) {
+        return this.locationService.findBySlug(slug);
+    }
+
     // GET ONE BY ID
     @Get(':id')
     findOne(@Param('id') id: string) {

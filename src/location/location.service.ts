@@ -4,6 +4,109 @@ import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
+export function formatLocationResponse(location: any) {
+    if (!location) return location;
+
+    let features = location.features ?? null;
+    if (typeof features === 'string') {
+        try {
+            features = JSON.parse(features);
+        } catch {
+            // keep as is
+        }
+    }
+
+    const enFromAddress = location.enFromAddress ?? null;
+    const ruFromAddress = location.ruFromAddress ?? null;
+    const hyFromAddress = location.hyFromAddress ?? null;
+
+    const enFromName = location.enFromName ?? null;
+    const ruFromName = location.ruFromName ?? null;
+    const hyFromName = location.hyFromName ?? null;
+
+    const enToAddress = location.enToAddress ?? null;
+    const ruToAddress = location.ruToAddress ?? null;
+    const hyToAddress = location.hyToAddress ?? null;
+
+    const enToName = location.enToName ?? null;
+    const ruToName = location.ruToName ?? null;
+    const hyToName = location.hyToName ?? null;
+
+    const fromPlace = {
+        placeId: location.fromPlaceId || '',
+        name: {
+            en: enFromName,
+            ru: ruFromName,
+            hy: hyFromName,
+        },
+        address: {
+            en: enFromAddress,
+            ru: ruFromAddress,
+            hy: hyFromAddress,
+        },
+        location: {
+            lat: location.fromLat,
+            lng: location.fromLng,
+        },
+    };
+
+    const toPlace = {
+        placeId: location.toPlaceId || '',
+        name: {
+            en: enToName,
+            ru: ruToName,
+            hy: hyToName,
+        },
+        address: {
+            en: enToAddress,
+            ru: ruToAddress,
+            hy: hyToAddress,
+        },
+        location: {
+            lat: location.toLat,
+            lng: location.toLng,
+        },
+    };
+
+    const name = {
+        en: enFromName ?? enToName ?? null,
+        ru: ruFromName ?? ruToName ?? null,
+        hy: hyFromName ?? hyToName ?? null,
+    };
+
+    const address = {
+        en: enFromAddress ?? enToAddress ?? null,
+        ru: ruFromAddress ?? ruToAddress ?? null,
+        hy: hyFromAddress ?? hyToAddress ?? null,
+    };
+
+    return {
+        ...location,
+        features,
+        enFromAddress,
+        ruFromAddress,
+        hyFromAddress,
+        enFromName,
+        ruFromName,
+        hyFromName,
+        enToAddress,
+        ruToAddress,
+        hyToAddress,
+        enToName,
+        ruToName,
+        hyToName,
+        name,
+        address,
+        placeId: location.fromPlaceId || location.toPlaceId || '',
+        location: {
+            lat: location.fromLat,
+            lng: location.fromLng,
+        },
+        fromPlace,
+        toPlace,
+    };
+}
+
 @Injectable()
 export class LocationService {
     constructor(
@@ -82,97 +185,8 @@ export class LocationService {
         };
     }
 
-    private formatLocationResponse(location: any) {
-        if (!location) return location;
-
-        const enFromAddress = location.enFromAddress ?? null;
-        const ruFromAddress = location.ruFromAddress ?? null;
-        const hyFromAddress = location.hyFromAddress ?? null;
-
-        const enFromName = location.enFromName ?? null;
-        const ruFromName = location.ruFromName ?? null;
-        const hyFromName = location.hyFromName ?? null;
-
-        const enToAddress = location.enToAddress ?? null;
-        const ruToAddress = location.ruToAddress ?? null;
-        const hyToAddress = location.hyToAddress ?? null;
-
-        const enToName = location.enToName ?? null;
-        const ruToName = location.ruToName ?? null;
-        const hyToName = location.hyToName ?? null;
-
-        const fromPlace = {
-            placeId: location.fromPlaceId || '',
-            name: {
-                en: enFromName,
-                ru: ruFromName,
-                hy: hyFromName,
-            },
-            address: {
-                en: enFromAddress,
-                ru: ruFromAddress,
-                hy: hyFromAddress,
-            },
-            location: {
-                lat: location.fromLat,
-                lng: location.fromLng,
-            },
-        };
-
-        const toPlace = {
-            placeId: location.toPlaceId || '',
-            name: {
-                en: enToName,
-                ru: ruToName,
-                hy: hyToName,
-            },
-            address: {
-                en: enToAddress,
-                ru: ruToAddress,
-                hy: hyToAddress,
-            },
-            location: {
-                lat: location.toLat,
-                lng: location.toLng,
-            },
-        };
-
-        const name = {
-            en: enFromName ?? enToName ?? null,
-            ru: ruFromName ?? ruToName ?? null,
-            hy: hyFromName ?? hyToName ?? null,
-        };
-
-        const address = {
-            en: enFromAddress ?? enToAddress ?? null,
-            ru: ruFromAddress ?? ruToAddress ?? null,
-            hy: hyFromAddress ?? hyToAddress ?? null,
-        };
-
-        return {
-            ...location,
-            enFromAddress,
-            ruFromAddress,
-            hyFromAddress,
-            enFromName,
-            ruFromName,
-            hyFromName,
-            enToAddress,
-            ruToAddress,
-            hyToAddress,
-            enToName,
-            ruToName,
-            hyToName,
-            name,
-            address,
-            placeId: location.fromPlaceId || location.toPlaceId || '',
-            location: {
-                lat: location.fromLat,
-                lng: location.fromLng,
-            },
-            fromPlace,
-            toPlace,
-        };
+    public formatLocationResponse(location: any) {
+        return formatLocationResponse(location);
     }
 
     async create(
@@ -311,15 +325,39 @@ export class LocationService {
     }
 
     async findOne(id: string) {
-        const location = await this.prisma.location.findUnique({
+        let location = await this.prisma.location.findUnique({
             where: { id },
+            include: {
+                tags: true,
+            },
+        }).catch(() => null);
+
+        if (!location) {
+            location = await this.prisma.location.findFirst({
+                where: { slug: id },
+                include: {
+                    tags: true,
+                },
+            });
+        }
+
+        if (!location) {
+            throw new NotFoundException('Location not found');
+        }
+
+        return this.formatLocationResponse(location);
+    }
+
+    async findBySlug(slug: string) {
+        const location = await this.prisma.location.findFirst({
+            where: { slug },
             include: {
                 tags: true,
             },
         });
 
         if (!location) {
-            throw new NotFoundException('Location not found');
+            throw new NotFoundException(`Location with slug "${slug}" not found`);
         }
 
         return this.formatLocationResponse(location);
@@ -516,6 +554,7 @@ export class LocationService {
                 ruTitle: true,
                 hyTitle: true,
                 mainImage: true,
+                features: true,
                 enFromAddress: true,
                 ruFromAddress: true,
                 hyFromAddress: true,

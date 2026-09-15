@@ -1,3 +1,4 @@
+import { formatLocationResponse } from 'src/location/location.service';
 import {
     Injectable,
     BadRequestException,
@@ -16,6 +17,30 @@ type UploadFiles = {
     mainImage?: Express.Multer.File[];
     images?: Express.Multer.File[];
 };
+
+export function formatTourResponse(tour: any) {
+    if (!tour) return tour;
+
+    let features = tour.features ?? null;
+    if (typeof features === 'string') {
+        try {
+            features = JSON.parse(features);
+        } catch {
+            // keep as is
+        }
+    }
+
+    const locations = tour.locations?.map((tl: any) => ({
+        ...tl,
+        location: tl.location ? formatLocationResponse(tl.location) : tl.location,
+    }));
+
+    return {
+        ...tour,
+        features,
+        ...(locations ? { locations } : {}),
+    };
+}
 
 @Injectable()
 export class TourService {
@@ -206,7 +231,7 @@ export class TourService {
             });
         });
 
-        return tour as TourWithLocations;
+        return formatTourResponse(tour) as TourWithLocations;
     }
 
     async findAll(): Promise<TourWithLocations[]> {
@@ -220,7 +245,7 @@ export class TourService {
                     tags: true,
                 },
             });
-            return tours as TourWithLocations[];
+            return tours.map((t) => formatTourResponse(t)) as TourWithLocations[];
         } catch (error: any) {
             console.error('Error in TourService.findAll:', error);
             throw new InternalServerErrorException(
@@ -247,7 +272,7 @@ export class TourService {
                     tags: true,
                 },
             });
-            return tours as TourWithLocations[];
+            return tours.map((t) => formatTourResponse(t)) as TourWithLocations[];
         } catch (error: any) {
             if (error instanceof BadRequestException) {
                 throw error;
@@ -261,7 +286,7 @@ export class TourService {
 
     async findOne(id: string): Promise<TourWithLocations> {
         try {
-            const tour = await this.prisma.tour.findUnique({
+            let tour = await this.prisma.tour.findUnique({
                 where: { id },
                 include: {
                     locations: {
@@ -270,13 +295,26 @@ export class TourService {
                     },
                     tags: true,
                 },
-            });
+            }).catch(() => null);
+
+            if (!tour) {
+                tour = await this.prisma.tour.findFirst({
+                    where: { slug: id },
+                    include: {
+                        locations: {
+                            orderBy: { order: 'asc' },
+                            include: { location: true },
+                        },
+                        tags: true,
+                    },
+                });
+            }
 
             if (!tour) {
                 throw new NotFoundException(`Tour with id "${id}" not found`);
             }
 
-            return tour as TourWithLocations;
+            return formatTourResponse(tour) as TourWithLocations;
         } catch (error: any) {
             if (error instanceof NotFoundException) throw error;
             console.error(`Error in TourService.findOne(${id}):`, error);
@@ -303,7 +341,7 @@ export class TourService {
                 throw new NotFoundException(`Tour with slug "${slug}" not found`);
             }
 
-            return tour as TourWithLocations;
+            return formatTourResponse(tour) as TourWithLocations;
         } catch (error: any) {
             if (error instanceof NotFoundException) throw error;
             console.error(`Error in TourService.findBySlug(${slug}):`, error);
@@ -315,7 +353,7 @@ export class TourService {
 
     async findPopular(): Promise<TourWithLocations[]> {
         try {
-            return await this.prisma.tour.findMany({
+            const tours = await this.prisma.tour.findMany({
                 where: {
                     tags: {
                         some: {
@@ -332,7 +370,8 @@ export class TourService {
                         include: { location: true },
                     },
                 },
-            }) as TourWithLocations[];
+            });
+            return tours.map((t) => formatTourResponse(t)) as TourWithLocations[];
         } catch (error: any) {
             console.error('Error in TourService.findPopular:', error);
             throw new InternalServerErrorException(
@@ -495,7 +534,7 @@ export class TourService {
     }
 
     async search(q: string, limit: number, skip: number) {
-        return await this.prisma.tour.findMany({
+        const tours = await this.prisma.tour.findMany({
             where: {
                 OR: [
                     { enTitle: { contains: q, mode: 'insensitive' } },
@@ -512,9 +551,11 @@ export class TourService {
                 ruTitle: true,
                 hyTitle: true,
                 mainImage: true,
+                features: true,
                 type: true,
             },
         });
+        return tours.map((t) => formatTourResponse(t));
     }
 
     async searchCount(q: string): Promise<number> {

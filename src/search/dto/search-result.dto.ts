@@ -11,6 +11,7 @@ export class SearchResult {
     ruTitle: string;
     hyTitle: string;
     image: string;
+    features?: any;
 }
 
 export class PaginatedSearchResponse {

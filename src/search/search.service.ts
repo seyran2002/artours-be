@@ -73,6 +73,7 @@ export class SearchService {
             ruTitle: t.ruTitle,
             hyTitle: t.hyTitle,
             image: t.mainImage,
+            features: (t as any).features ?? null,
         }));
 
         const locationResults: SearchResult[] = locations.map((t) => ({

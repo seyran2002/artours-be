@@ -15,6 +15,7 @@ const BOOKING_INCLUDE = {
             mainImage: true,
             minimumPrice: true,
             duration: true,
+            features: true,
         },
     },
     location: {
@@ -27,6 +28,7 @@ const BOOKING_INCLUDE = {
             mainImage: true,
             minimumPrice: true,
             toAddressText: true,
+            features: true,
         },
     },
 };

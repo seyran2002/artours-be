@@ -60,6 +60,7 @@ describe('TourService', () => {
           type: TourType.TOUR,
           locations: [],
           tags: [],
+          features: null,
         },
       ];
       mockPrismaService.tour.findMany.mockResolvedValue(mockTours);
