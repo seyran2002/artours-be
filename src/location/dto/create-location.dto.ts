@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString, IsNumber, IsArray, ValidateNested } from 'class-validator';
+import { FeatureDto } from 'src/common/dto/feature.dto';
+import { Transform, Type } from 'class-transformer';
 
 interface EntranceFees {
     enName: string;
@@ -228,6 +229,13 @@ export class CreateLocationDto {
 
     @IsOptional()
     entranceFees?: EntranceFees[];
+
+    @IsOptional()
+    @Transform(({ value }) => typeof value === 'string' ? JSON.parse(value) : value)
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => FeatureDto)
+    features?: FeatureDto[];
 
     @IsString()
     @IsOptional()

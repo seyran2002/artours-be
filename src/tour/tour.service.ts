@@ -82,7 +82,7 @@ export class TourService {
         dto: CreateTourDto,
         files?: UploadFiles,
     ): Promise<TourWithLocations> {
-        const { locationIds, transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto as any;
+        const { locationIds, transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, features, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto as any;
         const targetLocationIds = locationIds || transferIds || [];
 
         // Compute isOvernight and clean starRating/mealOptions if necessary
@@ -177,6 +177,7 @@ export class TourService {
                     starRating,
                     mealOptions,
                     ...(entranceFees ? { entranceFees } : {}),
+                    ...(features !== undefined ? { features } : {}),
 
                     ...(parsedTagIds?.length && {
                         tags: {
@@ -350,7 +351,7 @@ export class TourService {
             throw new NotFoundException(`Tour with id "${id}" not found`);
         }
 
-        const { locationIds, transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto as any;
+        const { locationIds, transferIds, mainImage, tagIds, images, minimumPrice, entranceFees, features, starRating: dtoStarRating, mealOptions: dtoMealOptions, ...rest } = dto as any;
         const targetLocationIds = locationIds || transferIds;
 
         // Compute isOvernight and clean starRating/mealOptions if necessary
@@ -465,6 +466,7 @@ export class TourService {
                     mealOptions,
                     ...(minimumPrice !== undefined ? { minimumPrice: Number(minimumPrice) } : {}),
                     ...(entranceFees !== undefined ? { entranceFees } : {}),
+                    ...(features !== undefined ? { features } : {}),
                     ...(parsedTagIds?.length && {
                         tags: {
                             set: parsedTagIds.map((id: string) => ({ id })),

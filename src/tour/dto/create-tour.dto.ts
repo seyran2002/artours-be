@@ -8,9 +8,11 @@ import {
     Min,
     Max,
     IsEnum,
+    ValidateNested,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import { TourType } from '@prisma/client';
+import { FeatureDto } from 'src/common/dto/feature.dto';
 
 export class CreateTourDto {
     @IsString()
@@ -75,6 +77,15 @@ export class CreateTourDto {
 
     @IsOptional()
     entranceFees?: any;
+
+    @IsOptional()
+    @Transform(({ value }) =>
+        typeof value === 'string' ? JSON.parse(value) : value
+    )
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => FeatureDto)
+    features?: FeatureDto[];
 
     @IsOptional()
     @IsEnum(TourType)

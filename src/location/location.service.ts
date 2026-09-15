@@ -212,6 +212,7 @@ export class LocationService {
             toCity,
             tagIds,
             entranceFees,
+            features,
             mainImage,
             images,
             placeId,
@@ -283,10 +284,8 @@ export class LocationService {
                 mainImage: mainImageUrl,
                 images: finalImages,
                 slug,
-
-                ...(entranceFees?.length && {
-                    entranceFees: entranceFees,
-                }),
+                ...(entranceFees?.length ? { entranceFees } : {}),
+                ...(features !== undefined ? { features } : {}),
 
                 ...(parsedTagIds?.length && {
                     tags: {
@@ -389,6 +388,7 @@ export class LocationService {
             toCity,
             tagIds,
             entranceFees,
+            features,
             mainImage,
             images,
             placeId,
@@ -418,9 +418,8 @@ export class LocationService {
             ...rest,
             mainImage: mainImageUrl,
             images: finalImages,
-            ...(entranceFees?.length && {
-                entranceFees: entranceFees,
-            }),
+                ...(entranceFees?.length ? { entranceFees } : {}),
+                ...(features !== undefined ? { features } : {}),
             ...(parsedTagIds?.length && {
                 tags: {
                     set: parsedTagIds.map(id => ({ id })),
