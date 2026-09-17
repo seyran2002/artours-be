@@ -67,7 +67,7 @@ export class SearchService {
 
         const tourResults: SearchResult[] = tours.map((t) => ({
             id: t.id,
-            type: SearchResultType.TOUR,
+            type: t.type === "TRANSFER" ? SearchResultType.TRANSFER : SearchResultType.TOUR,
             slug: t.slug,
             enTitle: t.enTitle,
             ruTitle: t.ruTitle,

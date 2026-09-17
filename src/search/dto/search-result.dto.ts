@@ -1,6 +1,7 @@
 export enum SearchResultType {
     TOUR = 'tour',
     LOCATION = 'location',
+    TRANSFER = 'transfer',
 }
 
 export class SearchResult {
