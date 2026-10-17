@@ -137,13 +137,13 @@ export class TelegramService implements OnModuleInit {
         }
     }
 
-    async notifyAdmin(text: string): Promise<boolean> {
+    async notifyAdmin(text: string, replyMarkup?: any): Promise<boolean> {
         const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
         if (!adminChatId) {
             this.logger.warn('TELEGRAM_ADMIN_CHAT_ID is not set — skipping admin notification');
             return false;
         }
-        return await this.sendMessage(adminChatId, text);
+        return await this.sendMessage(adminChatId, text, replyMarkup);
     }
 
     /**

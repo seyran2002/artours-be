@@ -374,3 +374,53 @@ export function buildReviewErrorMessage(lang: 'ru' | 'en' | 'hy'): string {
     }
 }
 
+// ─── Comment moderation templates ────────────────────────────────────────────
+
+function fmtDateTime(date: Date | string): string {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+/**
+ * Sent to the admin Telegram account when a new comment is submitted and awaiting approval.
+ */
+export function buildAdminNewCommentTemplate(comment: {
+    id: string;
+    name: string;
+    surname: string;
+    rating?: number;
+    originalText?: string;
+    createdAt: Date | string;
+}): string {
+    const link = `https://artours.am/admin/comments?search=${comment.id}`;
+    return `🔔 <b>Новый комментарий на модерацию</b>
+
+👤 <b>Автор:</b> ${escapeHtml(comment.name)}, ${escapeHtml(comment.surname)}${comment.rating ? `\n⭐ <b>Оценка:</b> ${comment.rating}/5` : ''}
+🕒 <b>Дата:</b> ${fmtDateTime(comment.createdAt)}${comment.originalText ? `\n\n💬 <b>Отзыв:</b>\n${escapeHtml(comment.originalText)}` : ''}
+
+🔗 <a href="${link}">${link}</a>`;
+}
+
+/**
+ * Inline keyboard button linking directly to the comment moderation page.
+ */
+export function buildAdminNewCommentKeyboard(commentId: string) {
+    const link = `https://artours.am/admin/comments?search=${commentId}`;
+    return {
+        inline_keyboard: [
+            [
+                {
+                    text: '🔎 Открыть комментарий',
+                    url: link,
+                },
+            ],
+        ],
+    };
+}
+
+

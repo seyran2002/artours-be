@@ -14,6 +14,7 @@ import { TelegramModule } from './telegram/telegram.module';
 import { NotificationModule } from './notification/notification.module';
 import { ContactModule } from './contact/contact.module';
 import { StatsModule } from './stats/stats.module';
+import { CommentModule } from './comment/comment.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { StatsModule } from './stats/stats.module';
     NotificationModule,
     ContactModule,
     StatsModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -78,6 +78,25 @@ export class CloudinaryService {
         return cloudinary.api.delete_resources(publicIds)
     }
 
+    extractPublicId(url: string): string | null {
+        try {
+            const parts = url.split('/upload/');
+            if (parts.length < 2) return null;
+            // Remove version segment (v<digits>/) if present, then strip extension
+            const withoutVersion = parts[1].replace(/^v\d+\//, '');
+            const withoutExtension = withoutVersion.replace(/\.[^/.]+$/, '');
+            return withoutExtension;
+        } catch {
+            return null;
+        }
+    }
+
+    async deleteImageByUrl(url: string) {
+        const publicId = this.extractPublicId(url);
+        if (!publicId) return null;
+        return this.deleteImage(publicId);
+    }
+
     private mapResult(result: UploadApiResponse): CloudinaryUploadResult {
         return {
             url: result.url,

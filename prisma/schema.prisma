@@ -37,6 +37,11 @@ enum TourType {
   TRANSFER
 }
 
+enum CommentStatus {
+  REVIEWING
+  ACTIVE
+}
+
 model User {
   id       String @id @default(uuid())
   email    String @unique
@@ -114,12 +119,12 @@ model Location {
   toLng         Float
 
   // Multilingual TO place data
-  enToAddress   String?
-  ruToAddress   String?
-  hyToAddress   String?
-  enToName      String?
-  ruToName      String?
-  hyToName      String?
+  enToAddress String?
+  ruToAddress String?
+  hyToAddress String?
+  enToName    String?
+  ruToName    String?
+  hyToName    String?
 
   routePolyline String?
   tours         TourLocation[]
@@ -147,7 +152,7 @@ model Tour {
   minimumPrice Int
   duration     String?
 
-  type        TourType @default(TOUR)
+  type TourType @default(TOUR)
 
   isOvernight Boolean @default(false)
   starRating  Int?
@@ -171,7 +176,7 @@ model TourLocation {
   id String @id @default(uuid())
 
   tourId     String
-  locationId String   @map("transferId")
+  locationId String @map("transferId")
   order      Int
 
   tour     Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
@@ -218,4 +223,21 @@ model Booking {
   location   Location? @relation(fields: [locationId], references: [id])
 
   @@index([status, travelDate])
+}
+
+model Comments {
+  id           String        @id @default(uuid())
+  name         String
+  surname      String
+  status       CommentStatus @default(REVIEWING)
+  originalText String        @db.Text
+  ruText       String?       @db.Text
+  hyText       String?       @db.Text
+  enText       String?       @db.Text
+  rating       Int
+  images       String[]      @default([])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([status])
 }
