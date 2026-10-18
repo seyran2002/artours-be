@@ -137,35 +137,26 @@ We hope to see you again! 🌟`;
 }
 
 /**
- * Sent when the booking is automatically marked COMPLETED after the travel date.
+ * Sent when the booking is marked COMPLETED.
  */
-export function buildCompletedTemplate(ctx: NotificationContext): string {
-    const ru = `🏁 <b>ArTours — Поездка завершена!</b>
+export function buildCompletedTemplate(_ctx?: NotificationContext): string {
+    const ru = `Спасибо, что путешествовали с ArTours! ❤️
+Надеемся, что Вы прекрасно провели время и получили незабываемые впечатления!
+Нам очень важно Ваше мнение. Будем рады, если Вы поделитесь своими впечатлениями и оставите отзыв на сайте <a href="https://artours.am">ArTours.am</a>.
+Ваши отзывы помогают нам становиться лучше и делать каждое путешествие ещё приятнее.
+Спасибо, что выбрали ArTours! Будем рады снова отправиться с Вами в новое путешествие. 🌍`;
 
-📋 <b>Номер бронирования:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Тур/Трансфер:</b> ${ctx.ruTitle}
+    const en = `Thank you for traveling with ArTours! ❤️
+We hope you had a wonderful time and created unforgettable memories with us!
+Your opinion means a lot to us. We'd love to hear about your experience, so please take a moment to share your thoughts and leave a review on <a href="https://artours.am">ArTours.am</a>.
+Your feedback helps us improve and make every journey even better.
+Thank you for choosing ArTours. We hope to see you again on your next adventure! 🌍`;
 
-Надеемся, вам понравилось путешествие! Будем рады видеть вас снова. 🌿
-
-Оставьте отзыв — это поможет нам стать ещё лучше. 🙏`;
-
-    const en = `🏁 <b>ArTours — Trip Completed!</b>
-
-📋 <b>Booking number:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Tour/Location:</b> ${ctx.enTitle}
-
-We hope you enjoyed your trip! We would love to see you again. 🌿
-
-Feel free to leave a review — it helps us improve. 🙏`;
-
-    const hy = `🏁 <b>ArTours — Ուղևորությունն ավարտված է:</b>
-
-📋 <b>Ամրագրման համարը:</b> <code>${ctx.bookingNumber}</code>
-🗺 <b>Տուր/Տրանսֆեր:</b> ${ctx.hyTitle}
-
-Հուսով ենք՝ ձեզ դուր եկավ ճանապարհորդությունը: Ուրախ կլինենք ձեզ նորից տեսնել: 🌿
-
-Խնդրում ենք թողնել կարծիք, դա կօգնի մեզ դառնալ էլ ավելի լավը: 🙏`;
+    const hy = `Շնորհակալություն ArTours-ի հետ ճանապարհորդելու համար։ ❤️
+Հուսով ենք՝ հրաշալի ժամանակ եք անցկացրել և մեզ հետ անմոռանալի հիշողություններ ստեղծել։
+Ձեր կարծիքը շատ կարևոր է մեզ համար։ Ուրախ կլինենք, եթե կիսվեք Ձեր տպավորություններով և կարծիք թողնեք <a href="https://artours.am">ArTours.am</a> կայքում։
+Ձեր արձագանքներն օգնում են մեզ բարելավել մեր ծառայությունները և յուրաքանչյուր ճանապարհորդություն դարձնել ավելի հաճելի։
+Շնորհակալություն ArTours-ն ընտրելու համար։ Սիրով կսպասենք Ձեզ մեր հաջորդ արկածների ընթացքում։ 🌍`;
 
     return ru + DIVIDER + en + DIVIDER + hy;
 }
@@ -263,116 +254,7 @@ function escapeHtml(text: string): string {
         .replace(/>/g, '&gt;');
 }
 
-/**
- * Returns inline keyboard attached to the completed booking message.
- */
-export function buildCompletedReviewKeyboard() {
-    return {
-        inline_keyboard: [
-            [{ text: '⭐ Оставить отзыв', callback_data: 'review:ru' }],
-            [{ text: '⭐ Leave a review', callback_data: 'review:en' }],
-            [{ text: '⭐ Թողնել կարծիք', callback_data: 'review:hy' }],
-        ],
-    };
-}
 
-/**
- * Prompt asking customer to rate their trip.
- */
-export function buildRatingPrompt(lang: 'ru' | 'en' | 'hy'): string {
-    switch (lang) {
-        case 'ru':
-            return '⭐ Оцените вашу поездку от 1 до 5:';
-        case 'hy':
-            return '⭐ Գնահատեք ձեր ուղևորությունը 1-ից 5:';
-        case 'en':
-        default:
-            return '⭐ Please rate your trip from 1 to 5:';
-    }
-}
-
-/**
- * Inline keyboard with 1-5 star rating buttons.
- */
-export function buildRatingKeyboard() {
-    return {
-        inline_keyboard: [
-            [
-                { text: '⭐ 1', callback_data: 'rating:1' },
-                { text: '⭐ 2', callback_data: 'rating:2' },
-                { text: '⭐ 3', callback_data: 'rating:3' },
-                { text: '⭐ 4', callback_data: 'rating:4' },
-                { text: '⭐ 5', callback_data: 'rating:5' },
-            ],
-        ],
-    };
-}
-
-/**
- * Prompt asking customer to write their review comment.
- */
-export function buildCommentPrompt(lang: 'ru' | 'en' | 'hy'): string {
-    switch (lang) {
-        case 'ru':
-            return '💬 Пожалуйста, напишите ваш отзыв:';
-        case 'hy':
-            return '💬 Խնդրում ենք գրել ձեր կարծիքը:';
-        case 'en':
-        default:
-            return '💬 Please write your review:';
-    }
-}
-
-/**
- * Template sent to the Admin Telegram chat when a customer submits a review.
- */
-export function buildAdminReviewTemplate(data: {
-    bookingNumber: string;
-    tourOrLocationTitle: string;
-    rating: number;
-    language: string;
-    comment: string;
-}): string {
-    return `📝 <b>NEW CUSTOMER REVIEW</b>
-
-📋 <b>Booking:</b> <code>${escapeHtml(data.bookingNumber)}</code>
-🗺 <b>Tour/Location:</b> ${escapeHtml(data.tourOrLocationTitle)}
-⭐ <b>Rating:</b> ${data.rating}/5
-🌐 <b>Language:</b> ${escapeHtml(data.language)}
-
-💬 <b>Customer review:</b>
-${escapeHtml(data.comment)}`;
-}
-
-/**
- * Localized confirmation sent to the customer after review is delivered to Admin.
- */
-export function buildReviewConfirmationMessage(lang: 'ru' | 'en' | 'hy'): string {
-    switch (lang) {
-        case 'ru':
-            return 'Спасибо большое за ваш отзыв! Мы очень ценим ваше мнение. 🙏';
-        case 'hy':
-            return 'Շատ շնորհակալ ենք ձեր կարծիքի համար։ Մենք իսկապես գնահատում ենք ձեր կարծիքը։ 🙏';
-        case 'en':
-        default:
-            return 'Thank you so much for your review! We truly appreciate your feedback. 🙏';
-    }
-}
-
-/**
- * Localized error message sent to customer if admin notification fails.
- */
-export function buildReviewErrorMessage(lang: 'ru' | 'en' | 'hy'): string {
-    switch (lang) {
-        case 'ru':
-            return '❌ Произошла ошибка при отправке отзыва. Пожалуйста, попробуйте позже.';
-        case 'hy':
-            return '❌ Տեղի ունեցավ սխալ կարծիքն ուղարկելիս: Խնդրում ենք փորձել ավելի ուշ:';
-        case 'en':
-        default:
-            return '❌ An error occurred while sending your review. Please try again later.';
-    }
-}
 
 // ─── Comment moderation templates ────────────────────────────────────────────
 

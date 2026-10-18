@@ -38,264 +38,119 @@ describe('TelegramService', () => {
         expect(service).toBeDefined();
     });
 
-    describe('Review Flow', () => {
-        it('should handle review:en callback query and prompt for rating in English', async () => {
-            prisma.booking.findFirst.mockResolvedValue({
-                bookingNumber: 'ART-100',
-                tour: { enTitle: 'Garni & Geghard' },
+    describe('linkTelegram', () => {
+        it('should link telegram chat ID to booking when valid booking is found', async () => {
+            prisma.booking.findUnique.mockResolvedValue({
+                id: 'booking-id-1',
+                customerName: 'John Doe',
             });
 
-            const callbackQuery = {
-                id: 'cb_123',
-                data: 'review:en',
-                message: { chat: { id: 987654 } },
-            };
+            await service.linkTelegram('BK-12345', '987654');
 
-            await service.handleWebhook({ callback_query: callbackQuery });
+            expect(prisma.booking.update).toHaveBeenCalledWith({
+                where: { bookingNumber: 'BK-12345' },
+                data: { customerTelegramId: '987654' },
+            });
 
-            // 1. Acknowledges callback query
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/answerCallbackQuery',
-                { callback_query_id: 'cb_123', text: undefined },
-            );
-
-            // 2. Sends English rating prompt with inline keyboard
             expect(mockedAxios.post).toHaveBeenCalledWith(
                 'https://api.telegram.org/botmock-token/sendMessage',
                 expect.objectContaining({
                     chat_id: '987654',
-                    text: '⭐ Please rate your trip from 1 to 5:',
-                    reply_markup: {
-                        inline_keyboard: [
-                            [
-                                { text: '⭐ 1', callback_data: 'rating:1' },
-                                { text: '⭐ 2', callback_data: 'rating:2' },
-                                { text: '⭐ 3', callback_data: 'rating:3' },
-                                { text: '⭐ 4', callback_data: 'rating:4' },
-                                { text: '⭐ 5', callback_data: 'rating:5' },
-                            ],
-                        ],
-                    },
+                    text: expect.stringContaining('John Doe'),
                 }),
             );
         });
 
-        it('should handle rating:5 callback query and prompt for comment in English', async () => {
-            // First initiate review in English
-            prisma.booking.findFirst.mockResolvedValue({
-                bookingNumber: 'ART-100',
-                tour: { enTitle: 'Garni & Geghard' },
-            });
+        it('should send error message when booking is not found', async () => {
+            prisma.booking.findUnique.mockResolvedValue(null);
 
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_1',
-                    data: 'review:en',
-                    message: { chat: { id: 987654 } },
-                },
-            });
+            await service.linkTelegram('BK-INVALID', '987654');
 
-            mockedAxios.post.mockClear();
-
-            // Next customer clicks rating:5
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_2',
-                    data: 'rating:5',
-                    message: { chat: { id: 987654 } },
-                },
-            });
-
-            // Acknowledges callback query
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/answerCallbackQuery',
-                { callback_query_id: 'cb_2', text: undefined },
-            );
-
-            // Sends English comment prompt
+            expect(prisma.booking.update).not.toHaveBeenCalled();
             expect(mockedAxios.post).toHaveBeenCalledWith(
                 'https://api.telegram.org/botmock-token/sendMessage',
                 expect.objectContaining({
                     chat_id: '987654',
-                    text: '💬 Please write your review:',
+                    text: expect.stringContaining('BK-INVALID'),
                 }),
             );
         });
+    });
 
-        it('should handle comment submission, forward review to admin, and send confirmation', async () => {
-            prisma.booking.findFirst.mockResolvedValue({
-                bookingNumber: 'ART-12345',
-                tour: { enTitle: 'Garni & Geghard' },
+    describe('handleWebhook', () => {
+        it('should handle /start with valid bookingNumber and link telegram', async () => {
+            prisma.booking.findUnique.mockResolvedValue({
+                id: 'booking-id-1',
+                customerName: 'Alice',
             });
 
-            // 1. Language selection
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_1',
-                    data: 'review:en',
-                    message: { chat: { id: 987654 } },
-                },
-            });
-
-            // 2. Rating selection
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_2',
-                    data: 'rating:5',
-                    message: { chat: { id: 987654 } },
-                },
-            });
-
-            mockedAxios.post.mockClear();
-
-            // 3. User sends text message
             await service.handleWebhook({
                 message: {
-                    chat: { id: 987654 },
-                    text: 'Everything was excellent. Our guide was very friendly.',
+                    chat: { id: 12345 },
+                    text: '/start BK-12345',
                 },
             });
 
-            // Notification sent to Admin chat
+            expect(prisma.booking.update).toHaveBeenCalledWith({
+                where: { bookingNumber: 'BK-12345' },
+                data: { customerTelegramId: '12345' },
+            });
+        });
+
+        it('should handle /start without bookingNumber and send welcome instructions', async () => {
+            await service.handleWebhook({
+                message: {
+                    chat: { id: 12345 },
+                    text: '/start',
+                },
+            });
+
+            expect(mockedAxios.post).toHaveBeenCalledWith(
+                'https://api.telegram.org/botmock-token/sendMessage',
+                expect.objectContaining({
+                    chat_id: '12345',
+                    text: expect.stringContaining('ArTours'),
+                }),
+            );
+        });
+
+        it('should acknowledge callback_query if received', async () => {
+            await service.handleWebhook({
+                callback_query: {
+                    id: 'cb_query_1',
+                    data: 'anything',
+                },
+            });
+
+            expect(mockedAxios.post).toHaveBeenCalledWith(
+                'https://api.telegram.org/botmock-token/answerCallbackQuery',
+                { callback_query_id: 'cb_query_1', text: undefined },
+            );
+        });
+    });
+
+    describe('sendMessage and notifyAdmin', () => {
+        it('should send message to given chat id', async () => {
+            const result = await service.sendMessage('987654', 'Hello world');
+            expect(result).toBe(true);
+            expect(mockedAxios.post).toHaveBeenCalledWith(
+                'https://api.telegram.org/botmock-token/sendMessage',
+                expect.objectContaining({
+                    chat_id: '987654',
+                    text: 'Hello world',
+                    parse_mode: 'HTML',
+                }),
+            );
+        });
+
+        it('should notify admin using TELEGRAM_ADMIN_CHAT_ID', async () => {
+            const result = await service.notifyAdmin('Admin notification');
+            expect(result).toBe(true);
             expect(mockedAxios.post).toHaveBeenCalledWith(
                 'https://api.telegram.org/botmock-token/sendMessage',
                 expect.objectContaining({
                     chat_id: '123456789',
-                    text: expect.stringContaining('NEW CUSTOMER REVIEW'),
-                }),
-            );
-
-            const adminCall = mockedAxios.post.mock.calls.find(
-                (call: any[]) => call[1]?.chat_id === '123456789',
-            );
-            expect(adminCall?.[1]?.text).toContain('ART-12345');
-            expect(adminCall?.[1]?.text).toContain('Garni &amp; Geghard');
-            expect(adminCall?.[1]?.text).toContain('5/5');
-            expect(adminCall?.[1]?.text).toContain('English');
-            expect(adminCall?.[1]?.text).toContain('Everything was excellent. Our guide was very friendly.');
-
-            // Confirmation sent to user
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/sendMessage',
-                expect.objectContaining({
-                    chat_id: '987654',
-                    text: 'Thank you so much for your review! We truly appreciate your feedback. 🙏',
-                }),
-            );
-        });
-
-        it('should handle review flow in Russian (RU)', async () => {
-            prisma.booking.findFirst.mockResolvedValue({
-                bookingNumber: 'ART-RU-1',
-                tour: { ruTitle: 'Гарни и Гегард', enTitle: 'Garni' },
-            });
-
-            // 1. review:ru
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_ru1',
-                    data: 'review:ru',
-                    message: { chat: { id: 111222 } },
-                },
-            });
-
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/sendMessage',
-                expect.objectContaining({
-                    chat_id: '111222',
-                    text: '⭐ Оцените вашу поездку от 1 до 5:',
-                }),
-            );
-
-            // 2. rating:4
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_ru2',
-                    data: 'rating:4',
-                    message: { chat: { id: 111222 } },
-                },
-            });
-
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/sendMessage',
-                expect.objectContaining({
-                    chat_id: '111222',
-                    text: '💬 Пожалуйста, напишите ваш отзыв:',
-                }),
-            );
-
-            mockedAxios.post.mockClear();
-
-            // 3. Comment
-            await service.handleWebhook({
-                message: {
-                    chat: { id: 111222 },
-                    text: 'Все прошло отлично!',
-                },
-            });
-
-            // Admin notification
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/sendMessage',
-                expect.objectContaining({
-                    chat_id: '123456789',
-                    text: expect.stringContaining('Гарни и Гегард'),
-                }),
-            );
-
-            // Russian Confirmation to customer
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/sendMessage',
-                expect.objectContaining({
-                    chat_id: '111222',
-                    text: 'Спасибо большое за ваш отзыв! Мы очень ценим ваше мнение. 🙏',
-                }),
-            );
-        });
-
-        it('should send error message to customer if admin delivery fails', async () => {
-            prisma.booking.findFirst.mockResolvedValue({
-                bookingNumber: 'ART-FAIL',
-                tour: { enTitle: 'Lake Sevan' },
-            });
-
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_1',
-                    data: 'review:en',
-                    message: { chat: { id: 333444 } },
-                },
-            });
-
-            await service.handleWebhook({
-                callback_query: {
-                    id: 'cb_2',
-                    data: 'rating:5',
-                    message: { chat: { id: 333444 } },
-                },
-            });
-
-            // Mock admin notification failure
-            mockedAxios.post.mockImplementation(async (url: string, payload: any) => {
-                if (payload?.chat_id === '123456789') {
-                    throw new Error('Telegram network error');
-                }
-                return { data: { ok: true } } as any;
-            });
-
-            await service.handleWebhook({
-                message: {
-                    chat: { id: 333444 },
-                    text: 'Great tour!',
-                },
-            });
-
-            // Customer receives error message instead of false success
-            expect(mockedAxios.post).toHaveBeenCalledWith(
-                'https://api.telegram.org/botmock-token/sendMessage',
-                expect.objectContaining({
-                    chat_id: '333444',
-                    text: '❌ An error occurred while sending your review. Please try again later.',
+                    text: 'Admin notification',
                 }),
             );
         });

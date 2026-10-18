@@ -1,35 +1,11 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import axios from 'axios';
-import {
-    buildAdminReviewTemplate,
-    buildCommentPrompt,
-    buildRatingKeyboard,
-    buildRatingPrompt,
-    buildReviewConfirmationMessage,
-    buildReviewErrorMessage,
-} from '../notification/notification.templates';
-
-export interface ReviewSession {
-    lang: 'ru' | 'en' | 'hy';
-    step: 'AWAITING_RATING' | 'AWAITING_COMMENT';
-    bookingNumber: string;
-    tourOrLocationTitle: string;
-    rating?: number;
-    updatedAt: number;
-}
-
-const LANGUAGE_NAMES: Record<'ru' | 'en' | 'hy', string> = {
-    ru: 'Russian',
-    en: 'English',
-    hy: 'Armenian',
-};
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
     private readonly logger = new Logger(TelegramService.name);
     private readonly botToken = process.env.TELEGRAM_BOT_TOKEN;
-    private readonly reviewSessions = new Map<string, ReviewSession>();
 
     constructor(private readonly prisma: PrismaService) { }
 
@@ -196,8 +172,7 @@ export class TelegramService implements OnModuleInit {
      * Handles a raw Telegram webhook update.
      * Supports:
      * 1. /start <bookingNumber> deep-linking
-     * 2. callback_query events for the review flow (language selection & rating)
-     * 3. text messages for submitting the review comment
+     * 2. callback_query events
      */
     async handleWebhook(body: any): Promise<void> {
         // 1. Handle callback query (inline button clicks)
@@ -235,133 +210,12 @@ export class TelegramService implements OnModuleInit {
             await this.linkTelegram(bookingNumber, chatId);
             return;
         }
-
-        // Check if user is actively writing a review comment
-        const session = this.reviewSessions.get(chatId);
-        if (session && session.step === 'AWAITING_COMMENT' && text.trim()) {
-            await this.handleReviewComment(chatId, session, text.trim());
-        }
     }
 
     private async handleCallbackQuery(callbackQuery: any): Promise<void> {
         const callbackQueryId = callbackQuery.id;
-        const data: string = callbackQuery.data ?? '';
-        const chatId = String(callbackQuery.message?.chat?.id ?? callbackQuery.from?.id);
-
-        if (!chatId) return;
-
-        // Step 1: Handle Review Language Button click (review:ru | review:en | review:hy)
-        const reviewMatch = data.match(/^review:(ru|en|hy)$/);
-        if (reviewMatch) {
-            const lang = reviewMatch[1] as 'ru' | 'en' | 'hy';
+        if (callbackQueryId) {
             await this.answerCallbackQuery(callbackQueryId);
-
-            const booking = await this.prisma.booking.findFirst({
-                where: { customerTelegramId: chatId },
-                orderBy: [{ updatedAt: 'desc' }],
-                include: { tour: true, location: true },
-            });
-
-            let title = 'Tour / Location';
-            if (booking) {
-                if (lang === 'ru') {
-                    title =
-                        booking.tour?.ruTitle ??
-                        booking.location?.ruTitle ??
-                        booking.tour?.enTitle ??
-                        booking.location?.enTitle ??
-                        'Тур / Локация';
-                } else if (lang === 'hy') {
-                    title =
-                        booking.tour?.hyTitle ??
-                        booking.location?.hyTitle ??
-                        booking.tour?.enTitle ??
-                        booking.location?.enTitle ??
-                        'Տուր / Լոկացիա';
-                } else {
-                    title =
-                        booking.tour?.enTitle ??
-                        booking.location?.enTitle ??
-                        'Tour / Location';
-                }
-            }
-
-            this.reviewSessions.set(chatId, {
-                lang,
-                step: 'AWAITING_RATING',
-                bookingNumber: booking?.bookingNumber ?? 'N/A',
-                tourOrLocationTitle: title,
-                updatedAt: Date.now(),
-            });
-
-            await this.sendMessage(
-                chatId,
-                buildRatingPrompt(lang),
-                buildRatingKeyboard(),
-            );
-            return;
-        }
-
-        // Step 2: Handle Rating Button click (rating:1 .. rating:5)
-        const ratingMatch = data.match(/^rating:([1-5])$/);
-        if (ratingMatch) {
-            const rating = parseInt(ratingMatch[1], 10);
-            await this.answerCallbackQuery(callbackQueryId);
-
-            let session = this.reviewSessions.get(chatId);
-            if (session) {
-                session.rating = rating;
-                session.step = 'AWAITING_COMMENT';
-                session.updatedAt = Date.now();
-            } else {
-                session = {
-                    lang: 'en',
-                    step: 'AWAITING_COMMENT',
-                    bookingNumber: 'N/A',
-                    tourOrLocationTitle: 'Tour / Location',
-                    rating,
-                    updatedAt: Date.now(),
-                };
-                this.reviewSessions.set(chatId, session);
-            }
-
-            await this.sendMessage(
-                chatId,
-                buildCommentPrompt(session.lang),
-            );
-            return;
-        }
-    }
-
-    private async handleReviewComment(
-        chatId: string,
-        session: ReviewSession,
-        comment: string,
-    ): Promise<void> {
-        const languageName = LANGUAGE_NAMES[session.lang] ?? 'English';
-        const adminMsg = buildAdminReviewTemplate({
-            bookingNumber: session.bookingNumber,
-            tourOrLocationTitle: session.tourOrLocationTitle,
-            rating: session.rating ?? 5,
-            language: languageName,
-            comment,
-        });
-
-        const success = await this.notifyAdmin(adminMsg);
-        if (success) {
-            this.reviewSessions.delete(chatId);
-            await this.sendMessage(
-                chatId,
-                buildReviewConfirmationMessage(session.lang),
-            );
-        } else {
-            this.logger.error(
-                `Failed to deliver review for booking ${session.bookingNumber} to admin Telegram chat`,
-            );
-            await this.sendMessage(
-                chatId,
-                buildReviewErrorMessage(session.lang),
-            );
         }
     }
 }

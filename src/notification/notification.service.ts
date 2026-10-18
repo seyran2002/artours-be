@@ -8,7 +8,6 @@ import {
     buildCancelledTemplate,
     buildConfirmedTemplate,
     buildCompletedTemplate,
-    buildCompletedReviewKeyboard,
     buildNewBookingTemplate,
     buildReminderTemplate,
 } from './notification.templates';
@@ -83,13 +82,14 @@ export class NotificationService {
             let message: string | null = null;
             let replyMarkup: any = undefined;
 
-            if (ctx.status === BookingStatus.CONFIRMED) {
-                message = buildConfirmedTemplate(ctx);
-            } else if (ctx.status === BookingStatus.CANCELLED) {
+            const isTourOutOfDate = ctx.travelDate ? new Date(ctx.travelDate) < new Date() : false;
+
+            if (ctx.status === BookingStatus.CANCELLED) {
                 message = buildCancelledTemplate(ctx);
-            } else if (ctx.status === BookingStatus.COMPLETED) {
+            } else if (ctx.status === BookingStatus.COMPLETED || isTourOutOfDate) {
                 message = buildCompletedTemplate(ctx);
-                replyMarkup = buildCompletedReviewKeyboard();
+            } else if (ctx.status === BookingStatus.CONFIRMED) {
+                message = buildConfirmedTemplate(ctx);
             }
 
             if (message) {
